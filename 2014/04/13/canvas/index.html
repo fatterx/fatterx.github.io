@@ -1,0 +1,768 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>canvas、bitmap、paint之间是什么关系 | Fatter&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Fatter">
+    
+
+    
+    <meta name="description" content="官方文档翻译过来的解释：
+要绘图，需要4个基本组件:
+
+Bitmap 保存像素的容器
+Canvas 执行绘图命令的宿主
+Rect/Path/text/Bitmap 要绘制的元素
+Paint 用什么样的方式绘制
+
+android的canvas绘图，基于skia，想要了解canvas的绘图过程，需要对canvas和skia的源码有所了解。
+查看Canvas源码，发现Canvas与Bitmap类似，都是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="canvas、bitmap、paint之间是什么关系">
+<meta property="og:url" content="http://lwn.me/2014/04/13/canvas/index.html">
+<meta property="og:site_name" content="Fatter's Blog">
+<meta property="og:description" content="官方文档翻译过来的解释：
+要绘图，需要4个基本组件:
+
+Bitmap 保存像素的容器
+Canvas 执行绘图命令的宿主
+Rect/Path/text/Bitmap 要绘制的元素
+Paint 用什么样的方式绘制
+
+android的canvas绘图，基于skia，想要了解canvas的绘图过程，需要对canvas和skia的源码有所了解。
+查看Canvas源码，发现Canvas与Bitmap类似，都是">
+<meta property="og:updated_time" content="2015-08-05T14:01:10.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="canvas、bitmap、paint之间是什么关系">
+<meta name="twitter:description" content="官方文档翻译过来的解释：
+要绘图，需要4个基本组件:
+
+Bitmap 保存像素的容器
+Canvas 执行绘图命令的宿主
+Rect/Path/text/Bitmap 要绘制的元素
+Paint 用什么样的方式绘制
+
+android的canvas绘图，基于skia，想要了解canvas的绘图过程，需要对canvas和skia的源码有所了解。
+查看Canvas源码，发现Canvas与Bitmap类似，都是">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Fatter&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Fatter&#39;s Blog" title="Fatter&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Fatter&#39;s Blog">Fatter&#39;s Blog</a></h1>
+				<h2 class="blog-motto">让我们忠于理想，让我们面对现实</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/lab">实验室</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+						<li><a href='javascript:(function() {  
+    function c() {  
+        var e = document.createElement("link");  
+        e.setAttribute("type", "text/css");  
+        e.setAttribute("rel", "stylesheet");  
+        e.setAttribute("href", f);  
+        e.setAttribute("class", l);  
+        document.body.appendChild(e)  
+    }  
+   
+    function h() {  
+        var e = document.getElementsByClassName(l);  
+        for (var t = 0; t < e.length; t++) {  
+            document.body.removeChild(e[t])  
+        }  
+    }  
+   
+    function p() {  
+        var e = document.createElement("div");  
+        e.setAttribute("class", a);  
+        document.body.appendChild(e);  
+        setTimeout(function() {  
+            document.body.removeChild(e)  
+        }, 100)  
+    }  
+   
+    function d(e) {  
+        return {  
+            height : e.offsetHeight,  
+            width : e.offsetWidth  
+        }  
+    }  
+   
+    function v(i) {  
+        var s = d(i);  
+        return s.height > e && s.height < n && s.width > t && s.width < r  
+    }  
+   
+    function m(e) {  
+        var t = e;  
+        var n = 0;  
+        while (!!t) {  
+            n += t.offsetTop;  
+            t = t.offsetParent  
+        }  
+        return n  
+    }  
+   
+    function g() {  
+        var e = document.documentElement;  
+        if (!!window.innerWidth) {  
+            return window.innerHeight  
+        } else if (e && !isNaN(e.clientHeight)) {  
+            return e.clientHeight  
+        }  
+        return 0  
+    }  
+   
+    function y() {  
+        if (window.pageYOffset) {  
+            return window.pageYOffset  
+        }  
+        return Math.max(document.documentElement.scrollTop, document.body.scrollTop)  
+    }  
+   
+    function E(e) {  
+        var t = m(e);  
+        return t >= w && t <= b + w  
+    }  
+   
+    function S() {  
+        var e = document.createElement("audio");  
+        e.setAttribute("class", l);  
+        e.src = i;  
+        e.loop = false;  
+        e.addEventListener("canplay", function() {  
+            setTimeout(function() {  
+                x(k)  
+            }, 500);  
+            setTimeout(function() {  
+                N();  
+                p();  
+                for (var e = 0; e < O.length; e++) {  
+                    T(O[e])  
+                }  
+            }, 14000)  
+        }, true);  
+        e.addEventListener("ended", function() {  
+            N();  
+            h()  
+        }, true);  
+        e.innerHTML = " <p>If you are reading this, it is because your browser does not support the audio element. We recommend that you get a new browser.</p> <p>";  
+        document.body.appendChild(e);  
+        e.play()  
+    }  
+   
+    function x(e) {  
+        e.className += " " + s + " " + o  
+    }  
+   
+    function T(e) {  
+        e.className += " " + s + " " + u[Math.floor(Math.random() * u.length)]  
+    }  
+   
+    function N() {  
+        var e = document.getElementsByClassName(s);  
+        var t = new RegExp("\\b" + s + "\\b");  
+        for (var n = 0; n < e.length; ) {  
+            e[n].className = e[n].className.replace(t, "")  
+        }  
+    }  
+   
+    var e = 30;  
+    var t = 30;  
+    var n = 350;  
+    var r = 350;  
+    var i = "/mp3/zouqilai.mp3"; 
+    var s = "mw-harlem_shake_me";  
+    var o = "im_first";  
+    var u = ["im_drunk", "im_baked", "im_trippin", "im_blown"];  
+    var a = "mw-strobe_light";  
+    var f = "/css/harlem-shake-style.css";  
+    var l = "mw_added_css";  
+    var b = g();  
+    var w = y();  
+    var C = document.getElementsByTagName("*");  
+    var k = null;  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            if (E(A)) {  
+                k = A;  
+                break  
+            }  
+        }  
+    }  
+    if (A === null) {  
+        console.warn("Could not find a node of the right size. Please try a different page.");  
+        return  
+    }  
+    c();  
+    S();  
+    var O = [];  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            O.push(A)  
+        }  
+    }  
+})()    '>奏起来</a></li>
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:lwn.me">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/04/13/canvas/" title="canvas、bitmap、paint之间是什么关系" itemprop="url">canvas、bitmap、paint之间是什么关系</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-04-12T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-04-13</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-number">1.</span> <span class="toc-text">总结</span></a></li></ol>
+		
+		</div>
+		
+		<p><a href="http://developer.android.com/reference/android/graphics/Canvas.html" target="_blank" rel="external">官方文档</a>翻译过来的解释：</p>
+<p>要绘图，需要4个基本组件:</p>
+<ul>
+<li>Bitmap 保存像素的容器</li>
+<li>Canvas 执行绘图命令的宿主</li>
+<li>Rect/Path/text/Bitmap 要绘制的元素</li>
+<li>Paint 用什么样的方式绘制</li>
+</ul>
+<p>android的<strong>canvas</strong>绘图，基于<strong>skia</strong>，想要了解<strong>canvas</strong>的绘图过程，需要对<strong>canvas</strong>和<strong>skia</strong>的源码有所了解。</p>
+<p>查看Canvas源码，发现Canvas与Bitmap类似，都是对其native方法进行了封装。</p>
+ <a id="more"></a>
+<p>真正起绘图作用的是<code>mNativeCanvas</code>，保存有<strong>nativeCanvas(SkCanvas)</strong>的指针。</p>
+<p><code>mNativeCanvas</code>注释上指明</p>
+<blockquote>
+<p> assigned in constructors or setBitmap, freed in finalizer</p>
+</blockquote>
+<p>说明<code>mNativeCanvas(SkCanvas)</code>是在构造函数、或者<code>setBitmap</code>时分配的。</p>
+<p>继续查看源码，发现<code>mNativeCanvas</code>是调用<strong>native</strong>方法</p>
+<pre><code><span class="function"><span class="title">initRaster</span><span class="params">(int nativeBitmapOrZero)</span></span>
+</code></pre><p>方法生成。</p>
+<p><code>initRaster</code>中的参数就是Canvas私有属性<code>mBitmap</code>的<strong>nativeBitmap(SkBitmap)</strong>的指针。</p>
+<p>查看<em>frameworks/base/core/jni/android/graphics/</em>下的Canvas.cpp文件，</p>
+<pre><code><span class="function"><span class="keyword">static</span> SkCanvas* <span class="title">initRaster</span><span class="params">(JNIEnv* env, jobject, SkBitmap* bitmap)</span> </span>{
+        <span class="keyword">return</span> bitmap ? <span class="keyword">new</span> SkCanvas(*bitmap) : <span class="keyword">new</span> SkCanvas;
+}
+</code></pre><p>发现如果指定了<strong>SkBitmap</strong>，<code>initRaster</code>会以指定的<strong>SkBitmap</strong>生成<strong>SkCanvas</strong>；</p>
+<p>反之会生成默认的<strong>SkCanvas</strong>。</p>
+<p>继续查看<em>android/external/skia/src/core/</em>下SkCanvas的源码，</p>
+<p>默认构造函数</p>
+<pre><code><span class="rule"><span class="attribute">SkCanvas</span>:<span class="value">:<span class="function">SkCanvas</span>()
+: <span class="function">fMCStack</span>(<span class="function">sizeof</span>(MCRec), fMCRecStorage, <span class="function">sizeof</span>(fMCRecStorage)) {
+    <span class="function">inc_canvas</span>()</span></span>;
+
+    <span class="tag">this-</span>&gt;<span class="tag">init</span>(<span class="tag">NULL</span>);
+}
+</code></pre><p><code>init</code>方法调用<code>setDevice</code>方法，生成默认的<strong>SkDevice</strong>，而<strong>SkDeveice</strong>最终会生成默认的<strong>SkBitmap</strong></p>
+<h3 id="总结">总结</h3><ul>
+<li><p>Canvas的属性<code>mNativeCanvas(SkCanvas)</code>是根据<code>mBitmap</code>生成的，如果<code>mBitmap</code>不为空，</p>
+<p>则<code>mNativeCanvas</code>操作/修改的<strong>SkBitmap</strong>就是<code>mBitmap</code>；</p>
+<p>否则会操作/修改<code>mNativeCanvas</code>自己的<strong>SkBitmap</strong>.</p>
+</li>
+<li><p>Canvas最终操作/修改的内存还是<strong>Bitmap(SkBitmap)</strong>中的数据.</p>
+</li>
+<li><p><code>Canvas(bitmap)</code> 与 <code>canvas.setBitmap(bitmap)</code>中的<strong>bitmap</strong>是Canvas的<code>mBitmap</code>，直接操作/修改的对象。</p>
+<p><code>canvas.drawBitmap(bitmap)</code>中的<strong>bitmap</strong>是源<strong>bitmap</strong>，draw时，不对源<strong>bitmap</strong>进行写操作，</p>
+<p>而是写入到<code>mBitmap</code>或<code>mNativeCanvas</code>自己的<strong>SkBitmap</strong>中。</p>
+</li>
+<li><p>源码中指明Canvas最大绘图大小为<strong>32766 * 32766</strong>。超过这个大小会直接报错。</p>
+</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/bitmap/">bitmap</a><a href="/tags/canvas/">canvas</a><a href="/tags/paint/">paint</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://lwn.me/2014/04/13/canvas/" data-title="canvas、bitmap、paint之间是什么关系 | Fatter&#39;s Blog" data-tsina="2807580682" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2014/04/13/drawable/" title="Drawable小研究">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Drawable小研究</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2014/04/11/bitmap/"  title="Android Bitmap的一点研究">
+ <strong>下一篇：</strong><br/> 
+ <span>Android Bitmap的一点研究
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-number">1.</span> <span class="toc-text">总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>2</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/bitmap/" title="bitmap">bitmap<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vo/" title="vo">vo<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/drawable/" title="drawable">drawable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/paint/" title="paint">paint<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/抓包/" title="抓包">抓包<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://lwn.me" target="_blank" title="Fatter&#39;s Blog">Fatter&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello, I&#39;m Fatter in Google. <br/>
+			This is my blog, believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/fatterx" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/fatterx" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:lwn888@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2015 
+		
+		<a href="/about" target="_blank" title="Fatter">Fatter</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'fatterx';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-48995178-1', 'lwn.me');  
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

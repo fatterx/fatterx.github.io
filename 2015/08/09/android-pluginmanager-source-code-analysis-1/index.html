@@ -1,0 +1,799 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Android PluginManager 源码解析1 | Fatter&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Fatter">
+    
+
+    
+    <meta name="description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架。项目地址：https://github.com/houkx/android-pluginmgr
+相比于其他的插件化解决方案，主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。
+实现的功能点：
+插件为普通">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android PluginManager 源码解析1">
+<meta property="og:url" content="http://lwn.me/2015/08/09/android-pluginmanager-source-code-analysis-1/index.html">
+<meta property="og:site_name" content="Fatter's Blog">
+<meta property="og:description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架。项目地址：https://github.com/houkx/android-pluginmgr
+相比于其他的插件化解决方案，主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。
+实现的功能点：
+插件为普通">
+<meta property="og:updated_time" content="2015-08-10T09:28:05.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android PluginManager 源码解析1">
+<meta name="twitter:description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架。项目地址：https://github.com/houkx/android-pluginmgr
+相比于其他的插件化解决方案，主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。
+实现的功能点：
+插件为普通">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Fatter&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Fatter&#39;s Blog" title="Fatter&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Fatter&#39;s Blog">Fatter&#39;s Blog</a></h1>
+				<h2 class="blog-motto">让我们忠于理想，让我们面对现实</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/lab">实验室</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+						<li><a href='javascript:(function() {  
+    function c() {  
+        var e = document.createElement("link");  
+        e.setAttribute("type", "text/css");  
+        e.setAttribute("rel", "stylesheet");  
+        e.setAttribute("href", f);  
+        e.setAttribute("class", l);  
+        document.body.appendChild(e)  
+    }  
+   
+    function h() {  
+        var e = document.getElementsByClassName(l);  
+        for (var t = 0; t < e.length; t++) {  
+            document.body.removeChild(e[t])  
+        }  
+    }  
+   
+    function p() {  
+        var e = document.createElement("div");  
+        e.setAttribute("class", a);  
+        document.body.appendChild(e);  
+        setTimeout(function() {  
+            document.body.removeChild(e)  
+        }, 100)  
+    }  
+   
+    function d(e) {  
+        return {  
+            height : e.offsetHeight,  
+            width : e.offsetWidth  
+        }  
+    }  
+   
+    function v(i) {  
+        var s = d(i);  
+        return s.height > e && s.height < n && s.width > t && s.width < r  
+    }  
+   
+    function m(e) {  
+        var t = e;  
+        var n = 0;  
+        while (!!t) {  
+            n += t.offsetTop;  
+            t = t.offsetParent  
+        }  
+        return n  
+    }  
+   
+    function g() {  
+        var e = document.documentElement;  
+        if (!!window.innerWidth) {  
+            return window.innerHeight  
+        } else if (e && !isNaN(e.clientHeight)) {  
+            return e.clientHeight  
+        }  
+        return 0  
+    }  
+   
+    function y() {  
+        if (window.pageYOffset) {  
+            return window.pageYOffset  
+        }  
+        return Math.max(document.documentElement.scrollTop, document.body.scrollTop)  
+    }  
+   
+    function E(e) {  
+        var t = m(e);  
+        return t >= w && t <= b + w  
+    }  
+   
+    function S() {  
+        var e = document.createElement("audio");  
+        e.setAttribute("class", l);  
+        e.src = i;  
+        e.loop = false;  
+        e.addEventListener("canplay", function() {  
+            setTimeout(function() {  
+                x(k)  
+            }, 500);  
+            setTimeout(function() {  
+                N();  
+                p();  
+                for (var e = 0; e < O.length; e++) {  
+                    T(O[e])  
+                }  
+            }, 14000)  
+        }, true);  
+        e.addEventListener("ended", function() {  
+            N();  
+            h()  
+        }, true);  
+        e.innerHTML = " <p>If you are reading this, it is because your browser does not support the audio element. We recommend that you get a new browser.</p> <p>";  
+        document.body.appendChild(e);  
+        e.play()  
+    }  
+   
+    function x(e) {  
+        e.className += " " + s + " " + o  
+    }  
+   
+    function T(e) {  
+        e.className += " " + s + " " + u[Math.floor(Math.random() * u.length)]  
+    }  
+   
+    function N() {  
+        var e = document.getElementsByClassName(s);  
+        var t = new RegExp("\\b" + s + "\\b");  
+        for (var n = 0; n < e.length; ) {  
+            e[n].className = e[n].className.replace(t, "")  
+        }  
+    }  
+   
+    var e = 30;  
+    var t = 30;  
+    var n = 350;  
+    var r = 350;  
+    var i = "/mp3/zouqilai.mp3"; 
+    var s = "mw-harlem_shake_me";  
+    var o = "im_first";  
+    var u = ["im_drunk", "im_baked", "im_trippin", "im_blown"];  
+    var a = "mw-strobe_light";  
+    var f = "/css/harlem-shake-style.css";  
+    var l = "mw_added_css";  
+    var b = g();  
+    var w = y();  
+    var C = document.getElementsByTagName("*");  
+    var k = null;  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            if (E(A)) {  
+                k = A;  
+                break  
+            }  
+        }  
+    }  
+    if (A === null) {  
+        console.warn("Could not find a node of the right size. Please try a different page.");  
+        return  
+    }  
+    c();  
+    S();  
+    var O = [];  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            O.push(A)  
+        }  
+    }  
+})()    '>奏起来</a></li>
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:lwn.me">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/09/android-pluginmanager-source-code-analysis-1/" title="Android PluginManager 源码解析1" itemprop="url">Android PluginManager 源码解析1</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-08T16:00:00.000Z" itemprop="datePublished"> 发表于 2015-08-09</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Android_PluginManager简介"><span class="toc-number">1.</span> <span class="toc-text">Android PluginManager简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#实现的功能点："><span class="toc-number">1.1.</span> <span class="toc-text">实现的功能点：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#尚未完成的部分："><span class="toc-number">1.2.</span> <span class="toc-text">尚未完成的部分：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一些限制："><span class="toc-number">1.3.</span> <span class="toc-text">一些限制：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PluginManager初始化"><span class="toc-number">2.</span> <span class="toc-text">PluginManager初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#获取application_Context"><span class="toc-number">2.1.</span> <span class="toc-text">获取application Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建plugins目录"><span class="toc-number">2.2.</span> <span class="toc-text">创建plugins目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建pluginouts目录"><span class="toc-number">2.3.</span> <span class="toc-text">创建pluginouts目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#替换classLoader"><span class="toc-number">2.4.</span> <span class="toc-text">替换classLoader</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加载插件"><span class="toc-number">3.</span> <span class="toc-text">加载插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#生成PluginInfo_对象保存插件信息"><span class="toc-number">3.1.</span> <span class="toc-text">生成PluginInfo 对象保存插件信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#copy插件apk文件到dexInternalStoragePath目录下"><span class="toc-number">3.2.</span> <span class="toc-text">copy插件apk文件到dexInternalStoragePath目录下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解析插件manifest-xml中的信息"><span class="toc-number">3.3.</span> <span class="toc-text">解析插件manifest.xml中的信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#生成自定义ClassLoader备用"><span class="toc-number">3.4.</span> <span class="toc-text">生成自定义ClassLoader备用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改AssetManager加载资源的位置"><span class="toc-number">3.5.</span> <span class="toc-text">修改AssetManager加载资源的位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#初始化插件的application"><span class="toc-number">3.6.</span> <span class="toc-text">初始化插件的application</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#加载目录下所有插件"><span class="toc-number">3.7.</span> <span class="toc-text">加载目录下所有插件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#启动插件中的MainActivity"><span class="toc-number">4.</span> <span class="toc-text">启动插件中的MainActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他方法"><span class="toc-number">5.</span> <span class="toc-text">其他方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="Android_PluginManager简介">Android PluginManager简介</h2><p>Android pluginManager是<a href="https://github.com/houkx/" target="_blank" rel="external">HouKangxi</a>大神开发的一个android插件化开发框架。项目地址：<a href="">https://github.com/houkx/android-pluginmgr</a></p>
+<p>相比于其他的插件化解决方案，主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。</p>
+<h3 id="实现的功能点：">实现的功能点：</h3><ul>
+<li>插件为普通apk，无须依赖任何jar(摘自<a href="http://blog.csdn.net/hkxxx/article/details/42194387" target="_blank" rel="external">作者的博客</a>)</li>
+<li>Activity生命周期由系统自己管理</li>
+<li>使用简单，只需要了解一个类PluginManager的两个方法</li>
+<li>启动Activity的效率高</li>
+<li>不修改插件，被加载的插件仍然可以独立安装。</li>
+<li>可加载任意apk中的 Activity (包括子类 ActionBarActivity 、FragmentActivity)的派生类(不包括违反限制条件的Activity)</li>
+<li>支持插件自定义Application</li>
+<li>支持插件Apk中的Activity跳转到别的Activity(插件内部的或系统的,外部已安装apk的，甚至是别的插件中的),也没有任何限制</li>
+<li>支持Activity设置主题(与系统的主题应用规则一样，如果Activity没指定Theme,但所在Application指定了Theme，则使用Application的Theme)</li>
+<li>初步支持.so</li>
+<li>支持插件使用 SharedPreference 或 SQLite数据库(尚未完善)</li>
+</ul>
+<h3 id="尚未完成的部分：">尚未完成的部分：</h3><ul>
+<li>目前还不支持service、content provider</li>
+</ul>
+<h3 id="一些限制：">一些限制：</h3><ul>
+<li>插件中的权限，无法动态注册，插件中的权限都得在宿主中注册</li>
+<li>不支持多进程</li>
+<li>Manifest中注册的activity的目前只能使用一种launchMode，<br>要支持singleTask等多种launchMode，需要自己维护activity栈来模拟。</li>
+</ul>
+<a id="more"></a>
+<h2 id="PluginManager初始化">PluginManager初始化</h2><ul>
+<li><h3 id="获取application_Context">获取application Context</h3></li>
+</ul>
+<p>PluginManager是一个单例，在初始化时将宿主（host）application Context 作为PluginManager的Context</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> Context ctx = context.getApplicationContext();</span><br><span class="line"><span class="keyword">synchronized</span> (PluginManager.class) &#123;</span><br><span class="line">    instance.init(ctx);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="创建plugins目录">创建plugins目录</h3></li>
+</ul>
+<p>在<code>dexInternalStoragePath</code>目录下保存插件的原apk文件，及动态生成的新的dex文件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dexInternalStoragePath = context</span><br><span class="line">        .getDir(<span class="string">"plugins"</span>, Context.MODE_PRIVATE);</span><br><span class="line">dexInternalStoragePath.mkdirs();</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="创建pluginouts目录">创建pluginouts目录</h3></li>
+</ul>
+<p>在<code>dexOutputPath</code>目录下保存插件的原dex文件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">File optimizedDexPath = ctx.getDir(<span class="string">"plugsout"</span>, Context.MODE_PRIVATE);</span><br><span class="line"><span class="keyword">if</span> (!optimizedDexPath.exists()) &#123;</span><br><span class="line">    optimizedDexPath.mkdirs();</span><br><span class="line">&#125;</span><br><span class="line">dexOutputPath = optimizedDexPath.getAbsolutePath();</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="替换classLoader">替换classLoader</h3></li>
+</ul>
+<p>把宿主 application context 的<code>classLoader</code>通过反射替换为自定义的classLoader FrameworkClassLoader.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">          Object mPackageInfo = ReflectionUtils.getFieldValue(ctx,</span><br><span class="line">                  <span class="string">"mBase.mPackageInfo"</span>, <span class="keyword">true</span>);</span><br><span class="line">          frameworkClassLoader = <span class="keyword">new</span> FrameworkClassLoader(</span><br><span class="line">                  ctx.getClassLoader());</span><br><span class="line">          <span class="comment">// set Application's classLoader to FrameworkClassLoader</span></span><br><span class="line">          ReflectionUtils.setFieldValue(mPackageInfo, <span class="string">"mClassLoader"</span>,</span><br><span class="line">                  frameworkClassLoader, <span class="keyword">true</span>);</span><br><span class="line">      &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">          e.printStackTrace();</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="加载插件">加载插件</h2><ul>
+<li><h3 id="生成PluginInfo_对象保存插件信息">生成PluginInfo 对象保存插件信息</h3></li>
+</ul>
+<p>把生成的PluginInfo对象保存Map中缓存，记录当前加载的插件。这里保存PluginInfo时需要在调用插件的地方为插件传入一个id，如果id为null，则默认使用插件的包命作为插件id。</p>
+<p>会同时保持在<code>pluginIdToInfoMap</code>，<code>pluginPkgToInfoMap</code> 两个map中，此处有冗余的嫌疑。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PlugInfo info = <span class="keyword">new</span> PlugInfo();</span><br><span class="line">info.setId(pluginId == <span class="keyword">null</span> ? pluginApk.getName() : pluginId);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">pluginPkgToInfoMap.put(plugInfo.getPackageName(), plugInfo);</span><br><span class="line">pluginIdToInfoMap.put(plugInfo.getId(), plugInfo);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="copy插件apk文件到dexInternalStoragePath目录下">copy插件apk文件到<code>dexInternalStoragePath</code>目录下</h3></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">File privateFile = <span class="keyword">new</span> File(dexInternalStoragePath,</span><br><span class="line">        targetFileName == <span class="keyword">null</span> ? pluginApk.getName() : targetFileName);</span><br><span class="line"></span><br><span class="line">info.setFilePath(privateFile.getAbsolutePath());</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!pluginApk.getAbsolutePath().equals(privateFile.getAbsolutePath())) &#123;</span><br><span class="line">    copyApkToPrivatePath(pluginApk, privateFile);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="解析插件manifest-xml中的信息">解析插件manifest.xml中的信息</h3></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String dexPath = privateFile.getAbsolutePath();</span><br><span class="line">PluginManifestUtil.setManifestInfo(context, dexPath, info);</span><br></pre></td></tr></table></figure>
+<p> 处理过程比较复杂，之后再分析</p>
+<ul>
+<li><h3 id="生成自定义ClassLoader备用">生成自定义ClassLoader备用</h3></li>
+</ul>
+<p><code>PluginClassLoader</code>继承自<code>DexClassLoader</code>，以<code>FramworkClassLoader</code>作为parent ClassLoader，把生成的<code>pluginClassLoader</code>保存在<code>pluginInfo</code>中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PluginClassLoader loader = <span class="keyword">new</span> PluginClassLoader(dexPath, dexOutputPath, frameworkClassLoader, info);</span><br><span class="line">info.setClassLoader(loader);</span><br></pre></td></tr></table></figure>
+<p>自定义的<code>PluginClassLoader</code>会在之后的<code>FrameworkClassLoader</code> <code>loadClass</code>时用到。</p>
+<p><code>FrameworkClassLoader</code>的<code>loadClass</code>方法是Android PluginManager的核心方法，根据需要选择不同的classLoader来加载类文件。当需要加载插件中的类时，便委托给<code>PluginClassLoader</code>。</p>
+<p><code>PluginClassLoader</code>由于继承自<code>DexClassLoader</code> ，所以可以直接加载apk中的类文件，从而实现插件化的能力。</p>
+<ul>
+<li><h3 id="修改AssetManager加载资源的位置">修改AssetManager加载资源的位置</h3></li>
+</ul>
+<p>现在已经能加载apk中的类文件了，但是还不能直接访问apk中的资源文件。</p>
+<p>android中加载资源文件均是通过<code>Context.getResources()</code>获取的。</p>
+<p>而<code>Resources</code>对象则是<code>ResourcesManager.getTopLevelResources()</code>通过<code>AssertManager</code>生成的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">           </span><br><span class="line">   <span class="function"><span class="keyword">public</span> Resources <span class="title">getTopLevelResources</span><span class="params">(String resDir, String[] splitResDirs,</span><br><span class="line">           String[] overlayDirs, String[] libDirs, <span class="keyword">int</span> displayId,</span><br><span class="line">           Configuration overrideConfiguration, CompatibilityInfo compatInfo, IBinder token)</span> </span>&#123;</span><br><span class="line">           ...</span><br><span class="line">      AssetManager assets = <span class="keyword">new</span> AssetManager();</span><br><span class="line">       <span class="comment">// resDir can be null if the 'android' package is creating a new Resources object.</span></span><br><span class="line">       <span class="comment">// This is fine, since each AssetManager automatically loads the 'android' package</span></span><br><span class="line">       <span class="comment">// already.</span></span><br><span class="line">       <span class="keyword">if</span> (resDir != <span class="keyword">null</span>) &#123;</span><br><span class="line">           <span class="keyword">if</span> (assets.addAssetPath(resDir) == <span class="number">0</span>) &#123;</span><br><span class="line">               <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">       </span><br><span class="line">       ...</span><br><span class="line">       r = <span class="keyword">new</span> Resources(assets, dm, config, compatInfo, token);</span><br><span class="line">       ...</span><br><span class="line">       </span><br><span class="line">       <span class="keyword">return</span> r;</span><br><span class="line">｝</span><br></pre></td></tr></table></figure>
+<p><code>Recoures中</code>的<code>getString()</code>、<code>getDrawable()</code>则又是委托给<code>AssetManager</code>的<code>loadResourceValue()</code>方法读取res下的资源。</p>
+<p><code>AssetManager</code>提供了一个<code>addAssetPath()</code>方法，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span><br><span class="line"> * Add an additional set of assets to the asset manager.  This can be</span><br><span class="line"> * either a directory or ZIP file.  Not for use by applications.  Returns</span><br><span class="line"> * the cookie of the added asset, or 0 on failure.</span><br><span class="line"> * &#123;<span class="doctag">@hide</span>&#125;</span><br><span class="line"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">addAssetPath</span><span class="params">(String path)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> res = addAssetPathNative(path);</span><br><span class="line">        makeStringBlocks(mStringBlocks);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以直接读取zip文件中的资源。</p>
+<p>我们把<code>dexInternalStoragePath</code>下之前copy的插件apk添加到assetpath中，这样之后生成的代理activity能访问到插件中的资源文件。</p>
+<p>所以我们需要生成一个<code>AssetManager</code>，并把插件apk的路径添加进<code>AssetManager</code>中。</p>
+<p><code>AssetManager</code>并不能直接new出来，<code>addAssetPath()</code>方法也不能直接方法，但是都可以同反射解决。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    AssetManager am = (AssetManager) AssetManager.class.newInstance();</span><br><span class="line">    am.getClass().getMethod(<span class="string">"addAssetPath"</span>, String.class)</span><br><span class="line">            .invoke(am, dexPath);</span><br><span class="line">    info.setAssetManager(am);</span><br><span class="line">    Resources ctxres = context.getResources();</span><br><span class="line">    Resources res = <span class="keyword">new</span> Resources(am, ctxres.getDisplayMetrics(),</span><br><span class="line">            ctxres.getConfiguration());</span><br><span class="line">    info.setResources(res);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样便可以访问插件中的资源了。</p>
+<ul>
+<li><h3 id="初始化插件的application">初始化插件的application</h3></li>
+</ul>
+<p>同样是通过反射，用之前通过<br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="label">PluginManifestUtil.setManifestInfo</span>(context, dexPath, <span class="preprocessor">info</span>)<span class="comment">;</span></span><br></pre></td></tr></table></figure></p>
+<p>方法获取保存在<code>PlugInfo</code>里的插件Application类名，实例化插件的application。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ClassLoader loader = plugin.getClassLoader();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    Class&lt;?&gt; applicationClass = loader.loadClass(className);</span><br><span class="line">    Application application = (Application) applicationClass</span><br><span class="line">            .newInstance();</span><br><span class="line">    setApplicationBase(plugin, application);</span><br><span class="line">    <span class="comment">// invoke plugin application's onCreate()</span></span><br><span class="line">    application.onCreate();</span><br><span class="line">&#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">    Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实例化插件的Application后，并不能直接使用， 此时的Application Context还是宿主（Host）的Context，直接<code>getResources()</code>，<code>getFilesDir()</code>等获取到的还是宿主的。</p>
+<p>需要用<code>PluginContextWrapper</code>替换掉插件Application中Context。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PluginContextWrapper ctxWrapper = <span class="keyword">new</span> PluginContextWrapper(context,</span><br><span class="line">         plugin);</span><br><span class="line"> plugin.appWrapper = ctxWrapper;</span><br><span class="line"> <span class="comment">// attach</span></span><br><span class="line"> Method attachMethod = Application.class.getDeclaredMethod(</span><br><span class="line">         <span class="string">"attach"</span>, Context.class);</span><br><span class="line"> attachMethod.setAccessible(<span class="keyword">true</span>);</span><br><span class="line"> attachMethod.invoke(application, ctxWrapper);</span><br><span class="line"> <span class="keyword">if</span> (context <span class="keyword">instanceof</span> Application) &#123;</span><br><span class="line">     <span class="keyword">if</span> (android.os.Build.VERSION.SDK_INT &gt;= <span class="number">14</span>) &#123;</span><br><span class="line">         Application.class.getMethod(<span class="string">"registerComponentCallbacks"</span>,</span><br><span class="line">                 Class.forName(<span class="string">"android.content.ComponentCallbacks"</span>))</span><br><span class="line">                 .invoke(context, application);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>ContextWrapper的原理和机制参考本文后的参考文章<a href="#参考">[5]</a><a href="#参考">[6]</a><a href="#参考">[7]</a><a href="#参考">[8]</a></p>
+<ul>
+<li><h3 id="加载目录下所有插件">加载目录下所有插件</h3></li>
+</ul>
+<p>同加载单个插件的方法，只不过是遍历目录下的所有apk文件。</p>
+<h2 id="启动插件中的MainActivity">启动插件中的MainActivity</h2><p><code>startMainActivity()</code>中的事情比较简单，根据插件id或插件包名在之前缓存的Map中查找<code>PlugInfo</code>，通过<code>framwworkClassLoader</code>的<code>newActivityClassName()</code>方法缓存要启动的插件id及Activity类名，供<code>framwworkClassLoader</code>在loadClass时使用。</p>
+<p>而<code>newActivityClassName()</code>方法本身只是返回一个名为<code>androidx.pluginmgr.PluginActivity</code>的代理Activity类名。</p>
+<p>至于具体如何通过<code>androidx.pluginmgr.PluginActivity</code>加载到真正插件中的Activity，则是在<code>PluginClassLoader</code>中的<code>loadActivityClass</code>方法实现的，后面再具体分析。</p>
+<h2 id="其他方法">其他方法</h2><p>剩下一些删除插件、卸载插件的方法，以及一些方法的重载，就不赘述了。</p>
+<p>本文是在学习Android pluginManager之余将做一些笔记备忘，刚开始研究插件，对其中难免有理解不正确的地方，欢迎大家留言指正，共同学习。</p>
+<h2 id="参考">参考</h2><ol>
+<li><a href="http://www.trinea.cn/android/java-loader-common-class/" target="_blank" rel="external">Java ClassLoader基础及加载不同依赖 Jar 中的公共类</a></li>
+<li><a href="http://www.trinea.cn/android/android-plugin/" target="_blank" rel="external">Android 插件化 动态升级</a></li>
+<li><a href="http://blog.csdn.net/singwhatiwanna/article/details/39937639" target="_blank" rel="external">APK动态加载框架（DL）解析</a></li>
+<li><a href="http://codekk.com/open-source-project-analysis/detail/Android/FFish/DynamicLoadApk%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90" target="_blank" rel="external">DynamicLoadApk 源码解析</a></li>
+<li><a href="http://blog.csdn.net/canghai1129/article/details/41577901" target="_blank" rel="external">Android与设计模式——装饰者(Decorator)模式</a></li>
+<li><a href="http://blog.csdn.net/z1074971432/article/details/12561369" target="_blank" rel="external">深入理解 Context</a></li>
+<li><a href="http://blog.csdn.net/qinjuning/article/details/7310620" target="_blank" rel="external">Android中Context详解 —- 你所不知道的Context</a></li>
+<li><a href="http://blogs.360.cn/blog/proxydelegate-application/" target="_blank" rel="external">Android的Proxy/Delegate Application框架</a></li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://lwn.me/2015/08/09/android-pluginmanager-source-code-analysis-1/" data-title="Android PluginManager 源码解析1 | Fatter&#39;s Blog" data-tsina="2807580682" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2014/11/02/javascript-vo-closure-scopechain/"  title="图解javascript中的变量对象、闭包、作用域链机理">
+ <strong>下一篇：</strong><br/> 
+ <span>图解javascript中的变量对象、闭包、作用域链机理
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Android_PluginManager简介"><span class="toc-number">1.</span> <span class="toc-text">Android PluginManager简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#实现的功能点："><span class="toc-number">1.1.</span> <span class="toc-text">实现的功能点：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#尚未完成的部分："><span class="toc-number">1.2.</span> <span class="toc-text">尚未完成的部分：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一些限制："><span class="toc-number">1.3.</span> <span class="toc-text">一些限制：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PluginManager初始化"><span class="toc-number">2.</span> <span class="toc-text">PluginManager初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#获取application_Context"><span class="toc-number">2.1.</span> <span class="toc-text">获取application Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建plugins目录"><span class="toc-number">2.2.</span> <span class="toc-text">创建plugins目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建pluginouts目录"><span class="toc-number">2.3.</span> <span class="toc-text">创建pluginouts目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#替换classLoader"><span class="toc-number">2.4.</span> <span class="toc-text">替换classLoader</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加载插件"><span class="toc-number">3.</span> <span class="toc-text">加载插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#生成PluginInfo_对象保存插件信息"><span class="toc-number">3.1.</span> <span class="toc-text">生成PluginInfo 对象保存插件信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#copy插件apk文件到dexInternalStoragePath目录下"><span class="toc-number">3.2.</span> <span class="toc-text">copy插件apk文件到dexInternalStoragePath目录下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解析插件manifest-xml中的信息"><span class="toc-number">3.3.</span> <span class="toc-text">解析插件manifest.xml中的信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#生成自定义ClassLoader备用"><span class="toc-number">3.4.</span> <span class="toc-text">生成自定义ClassLoader备用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改AssetManager加载资源的位置"><span class="toc-number">3.5.</span> <span class="toc-text">修改AssetManager加载资源的位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#初始化插件的application"><span class="toc-number">3.6.</span> <span class="toc-text">初始化插件的application</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#加载目录下所有插件"><span class="toc-number">3.7.</span> <span class="toc-text">加载目录下所有插件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#启动插件中的MainActivity"><span class="toc-number">4.</span> <span class="toc-text">启动插件中的MainActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他方法"><span class="toc-number">5.</span> <span class="toc-text">其他方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>2</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/bitmap/" title="bitmap">bitmap<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vo/" title="vo">vo<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/drawable/" title="drawable">drawable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/paint/" title="paint">paint<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/抓包/" title="抓包">抓包<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://lwn.me" target="_blank" title="Fatter&#39;s Blog">Fatter&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello, I&#39;m Fatter in Google. <br/>
+			This is my blog, believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/fatterx" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/fatterx" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:lwn888@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2015 
+		
+		<a href="/about" target="_blank" title="Fatter">Fatter</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'fatterx';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-48995178-1', 'lwn.me');  
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,1104 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Fatter&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Fatter">
+    
+
+    
+    <meta name="description">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Fatter's Blog">
+<meta property="og:url" content="http://lwn.me/index.html">
+<meta property="og:site_name" content="Fatter's Blog">
+<meta property="og:description">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Fatter's Blog">
+<meta name="twitter:description">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Fatter&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Fatter&#39;s Blog" title="Fatter&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Fatter&#39;s Blog">Fatter&#39;s Blog</a></h1>
+				<h2 class="blog-motto">让我们忠于理想，让我们面对现实</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/lab">实验室</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+						<li><a href='javascript:(function() {  
+    function c() {  
+        var e = document.createElement("link");  
+        e.setAttribute("type", "text/css");  
+        e.setAttribute("rel", "stylesheet");  
+        e.setAttribute("href", f);  
+        e.setAttribute("class", l);  
+        document.body.appendChild(e)  
+    }  
+   
+    function h() {  
+        var e = document.getElementsByClassName(l);  
+        for (var t = 0; t < e.length; t++) {  
+            document.body.removeChild(e[t])  
+        }  
+    }  
+   
+    function p() {  
+        var e = document.createElement("div");  
+        e.setAttribute("class", a);  
+        document.body.appendChild(e);  
+        setTimeout(function() {  
+            document.body.removeChild(e)  
+        }, 100)  
+    }  
+   
+    function d(e) {  
+        return {  
+            height : e.offsetHeight,  
+            width : e.offsetWidth  
+        }  
+    }  
+   
+    function v(i) {  
+        var s = d(i);  
+        return s.height > e && s.height < n && s.width > t && s.width < r  
+    }  
+   
+    function m(e) {  
+        var t = e;  
+        var n = 0;  
+        while (!!t) {  
+            n += t.offsetTop;  
+            t = t.offsetParent  
+        }  
+        return n  
+    }  
+   
+    function g() {  
+        var e = document.documentElement;  
+        if (!!window.innerWidth) {  
+            return window.innerHeight  
+        } else if (e && !isNaN(e.clientHeight)) {  
+            return e.clientHeight  
+        }  
+        return 0  
+    }  
+   
+    function y() {  
+        if (window.pageYOffset) {  
+            return window.pageYOffset  
+        }  
+        return Math.max(document.documentElement.scrollTop, document.body.scrollTop)  
+    }  
+   
+    function E(e) {  
+        var t = m(e);  
+        return t >= w && t <= b + w  
+    }  
+   
+    function S() {  
+        var e = document.createElement("audio");  
+        e.setAttribute("class", l);  
+        e.src = i;  
+        e.loop = false;  
+        e.addEventListener("canplay", function() {  
+            setTimeout(function() {  
+                x(k)  
+            }, 500);  
+            setTimeout(function() {  
+                N();  
+                p();  
+                for (var e = 0; e < O.length; e++) {  
+                    T(O[e])  
+                }  
+            }, 14000)  
+        }, true);  
+        e.addEventListener("ended", function() {  
+            N();  
+            h()  
+        }, true);  
+        e.innerHTML = " <p>If you are reading this, it is because your browser does not support the audio element. We recommend that you get a new browser.</p> <p>";  
+        document.body.appendChild(e);  
+        e.play()  
+    }  
+   
+    function x(e) {  
+        e.className += " " + s + " " + o  
+    }  
+   
+    function T(e) {  
+        e.className += " " + s + " " + u[Math.floor(Math.random() * u.length)]  
+    }  
+   
+    function N() {  
+        var e = document.getElementsByClassName(s);  
+        var t = new RegExp("\\b" + s + "\\b");  
+        for (var n = 0; n < e.length; ) {  
+            e[n].className = e[n].className.replace(t, "")  
+        }  
+    }  
+   
+    var e = 30;  
+    var t = 30;  
+    var n = 350;  
+    var r = 350;  
+    var i = "/mp3/zouqilai.mp3"; 
+    var s = "mw-harlem_shake_me";  
+    var o = "im_first";  
+    var u = ["im_drunk", "im_baked", "im_trippin", "im_blown"];  
+    var a = "mw-strobe_light";  
+    var f = "/css/harlem-shake-style.css";  
+    var l = "mw_added_css";  
+    var b = g();  
+    var w = y();  
+    var C = document.getElementsByTagName("*");  
+    var k = null;  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            if (E(A)) {  
+                k = A;  
+                break  
+            }  
+        }  
+    }  
+    if (A === null) {  
+        console.warn("Could not find a node of the right size. Please try a different page.");  
+        return  
+    }  
+    c();  
+    S();  
+    var O = [];  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            O.push(A)  
+        }  
+    }  
+})()    '>奏起来</a></li>
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:lwn.me">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/09/android-pluginmanager-source-code-analysis-1/" title="Android PluginManager 源码解析1" itemprop="url">Android PluginManager 源码解析1</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-08T16:00:00.000Z" itemprop="datePublished"> 发表于 2015-08-09</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Android_PluginManager简介">Android PluginManager简介</h2><p>Android pluginManager是<a href="https://github.com/houkx/">HouKangxi</a>大神开发的一个android插件化开发框架。项目地址：<a href="">https://github.com/houkx/android-pluginmgr</a></p>
+<p>相比于其他的插件化解决方案，主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。</p>
+<h3 id="实现的功能点：">实现的功能点：</h3><ul>
+<li>插件为普通apk，无须依赖任何jar(摘自<a href="http://blog.csdn.net/hkxxx/article/details/42194387">作者的博客</a>)</li>
+<li>Activity生命周期由系统自己管理</li>
+<li>使用简单，只需要了解一个类PluginManager的两个方法</li>
+<li>启动Activity的效率高</li>
+<li>不修改插件，被加载的插件仍然可以独立安装。</li>
+<li>可加载任意apk中的 Activity (包括子类 ActionBarActivity 、FragmentActivity)的派生类(不包括违反限制条件的Activity)</li>
+<li>支持插件自定义Application</li>
+<li>支持插件Apk中的Activity跳转到别的Activity(插件内部的或系统的,外部已安装apk的，甚至是别的插件中的),也没有任何限制</li>
+<li>支持Activity设置主题(与系统的主题应用规则一样，如果Activity没指定Theme,但所在Application指定了Theme，则使用Application的Theme)</li>
+<li>初步支持.so</li>
+<li>支持插件使用 SharedPreference 或 SQLite数据库(尚未完善)</li>
+</ul>
+<h3 id="尚未完成的部分：">尚未完成的部分：</h3><ul>
+<li>目前还不支持service、content provider</li>
+</ul>
+<h3 id="一些限制：">一些限制：</h3><ul>
+<li>插件中的权限，无法动态注册，插件中的权限都得在宿主中注册</li>
+<li>不支持多进程</li>
+<li>Manifest中注册的activity的目前只能使用一种launchMode，<br>要支持singleTask等多种launchMode，需要自己维护activity栈来模拟。</li>
+</ul>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2015/08/09/android-pluginmanager-source-code-analysis-1/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2015/08/09/android-pluginmanager-source-code-analysis-1/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/11/02/javascript-vo-closure-scopechain/" title="图解javascript中的变量对象、闭包、作用域链机理" itemprop="url">图解javascript中的变量对象、闭包、作用域链机理</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-11-01T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-11-02</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="什么是闭包">什么是闭包</h2><p><strong>javascript</strong>中的<strong>闭包</strong>是一个强大而灵活的武器，搞清<strong>闭包</strong>，<strong>作用域链</strong>的作用机理，能让我更好的将<strong>闭包</strong>运用在我们的项目中。</p>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">mozilla开发者中心的定义：</a></p>
+<blockquote>
+<p>Closures are functions that refer to independent (free) variables. </p>
+<p>In other words, the function defined in the closure ‘remembers’ the environment in which it was created. </p>
+</blockquote>
+<p>我理解的<strong>闭包</strong>是一个<strong>function</strong>，并且具有访问不在<strong>function</strong>内部定义的变量的能力，如嵌套<strong>function</strong>中的子<strong>function</strong>可以访问到定义在父<strong>function</strong>中的变量，是一类语言（如<strong>js</strong>）的特性。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/11/02/javascript-vo-closure-scopechain/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/javascript/">javascript</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/closure/">closure</a><a href="/tags/scopechain/">scopechain</a><a href="/tags/vo/">vo</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/11/02/javascript-vo-closure-scopechain/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/11/01/javascript-variable-object/" title="对javascript中的Variable Object的理解" itemprop="url">对javascript中的Variable Object的理解</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-10-31T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-11-01</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Variable_Object">Variable Object</h2><p>在<strong>ECMAScipt</strong>中，通过变量对象<strong>Variable Object (VO)</strong>机制来存贮、访问变量variables。<strong>VO</strong>中包含了：</p>
+<h3 id="1-_variables_(通过var_声明的变量)">1.  variables (通过var 声明的变量)</h3><h3 id="2-_function_declaration_(函数声明)">2.  function declaration (函数声明)</h3><h3 id="3-_function_formal_parameters_(函数行参)">3.  function formal parameters (函数行参)</h3><p><strong>注</strong>： 不包括function expression (函数表达式)。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/11/01/javascript-variable-object/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/javascript/">javascript</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/javascript/">javascript</a><a href="/tags/scope-chain/">scope chain</a><a href="/tags/vo/">vo</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/11/01/javascript-variable-object/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/11/01/android-sdcard-mounting-method/" title="android不同系统版本sd的挂载方式" itemprop="url">android不同系统版本sd的挂载方式</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-10-31T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-11-01</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="2-x系统">2.x系统</h2><p>sd卡实际挂载位置</p>
+<pre><code><span class="regexp">/mnt/</span>sdcard 
+</code></pre><p>并建立了一个/sdcard的软链接指向/mnt/sdcard</p>
+<pre><code><span class="regexp">/sdcard/</span>  --&gt; <span class="regexp">/mnt/</span>sdcard
+</code></pre><p><strong>Android 2.2之后的版本允许将应用程序安装于SD卡</strong></p>
+<p>当SD卡挂载于手机时，<code>/mnt/sdcard/.android_secure</code> 目录会被映射到<code>/mnt/asec</code> 目录和 <code>/mnt/secure</code> 目录。其中<code>/mnt/asec</code> 目录中主要是程序的安装目录，包括其执行文件和lib文件等；而<code>/mnt/secure</code> 目录中就存放程序加密后的档案。也就是说，在<code>/mnt</code>路径下看到的<code>/mnt/asec</code>目录和<code>/mnt/secure</code>目录并不是真正存在在手机内存里的，它们只是<code>/mnt/sdcard/.android_secure</code>目录的一个影像而已。也就是说<code>/mnt/sdcard/.android_secure</code> =<code>/mnt/secure</code> +<code>/mnt/asec</code></p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/11/01/android-sdcard-mounting-method/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/android/">android</a><a href="/tags/sdcard/">sdcard</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/11/01/android-sdcard-mounting-method/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/04/13/drawable/" title="Drawable小研究" itemprop="url">Drawable小研究</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-04-12T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-04-13</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Drawable，官方给出的解释是“<em>something that can be drawn</em>”，翻译过来就是可以被画的东西。</p>
+<p>官方把“可以被画的东西”分为了7种形式:</p>
+<ul>
+<li><p><a href="../../11/bitmap">Bitmap</a> 最简单的“可以被画的东西”，可能是png，或jpg</p>
+</li>
+<li><p><strong>Nine Patch</strong> 俗称“.9”图，android自己扩展的一种png格式，可以自定义图像拉伸的信息</p>
+</li>
+<li><p><strong>Shape</strong> 用简单的绘图指令生成图片。如画矩形、圆形</p>
+</li>
+<li><p><strong>Layers</strong> 多个Drawable，按照层叠顺序组成的Drawable</p>
+</li>
+<li><p><strong>States</strong> Drawable的状态，如“focused”, “pressed”等</p>
+</li>
+<li><p><strong>Levels</strong> 可以更改level的Drawable，如进度条，电池进度</p>
+</li>
+<li><p><strong>Scale</strong> 可缩放的Drawable</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/04/13/drawable/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/bitmap/">bitmap</a><a href="/tags/drawable/">drawable</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/04/13/drawable/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/04/13/canvas/" title="canvas、bitmap、paint之间是什么关系" itemprop="url">canvas、bitmap、paint之间是什么关系</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-04-12T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-04-13</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p><a href="http://developer.android.com/reference/android/graphics/Canvas.html">官方文档</a>翻译过来的解释：</p>
+<p>要绘图，需要4个基本组件:</p>
+<ul>
+<li>Bitmap 保存像素的容器</li>
+<li>Canvas 执行绘图命令的宿主</li>
+<li>Rect/Path/text/Bitmap 要绘制的元素</li>
+<li>Paint 用什么样的方式绘制</li>
+</ul>
+<p>android的<strong>canvas</strong>绘图，基于<strong>skia</strong>，想要了解<strong>canvas</strong>的绘图过程，需要对<strong>canvas</strong>和<strong>skia</strong>的源码有所了解。</p>
+<p>查看Canvas源码，发现Canvas与Bitmap类似，都是对其native方法进行了封装。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/04/13/canvas/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/bitmap/">bitmap</a><a href="/tags/canvas/">canvas</a><a href="/tags/paint/">paint</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/04/13/canvas/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/04/11/bitmap/" title="Android Bitmap的一点研究" itemprop="url">Android Bitmap的一点研究</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-04-10T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-04-11</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>android中的<strong>Bitmap</strong>与其他对象不同，不能通过<code>new Bitmap()</code>直接实例化.</p>
+<p>查看源码，<strong>Bitmap</strong>的构造函数是<em>default</em>的，仅包内可见，实际是供<strong>native</strong>方法调用的。</p>
+<p><strong>Bitmap</strong>中实际保存数据的地方在<strong>native</strong>层，<strong>java</strong>层仅对<strong>native</strong>层方法进行封装、重载，</p>
+<p>并提供一些状态的判断方法、属性的<code>set</code>、<code>get</code>方法。</p>
+<p><strong>Bitmap</strong>有<code>mNativaBitmap</code>属性，用来保存<code>nativeBitmap</code>的地址。</p>
+<p><code>mNativeBitmap</code>的地址在构造<strong>Bitmap</strong>时，由<strong>native</strong>方法直接传递进来。</p>
+<p>####所以整个<strong>Bitmap</strong>可以认为在<strong>java</strong>层基本不怎么占内存，大部分内存占用都是在<strong>native</strong>层。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/04/11/bitmap/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/bitmap/">bitmap</a><a href="/tags/canvas/">canvas</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/04/11/bitmap/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/03/21/how-to-view-network-requests-on-android/" title="如何在android上抓包" itemprop="url">如何在android上抓包</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-03-20T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-03-21</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="用Charles">用Charles</h2><p><strong>android4.0以上的系统，wifi环境下支持设置网络代理。</strong></p>
+<ul>
+<li><p>安装<a href="http://www.charlesproxy.com/">Charles</a></p>
+</li>
+<li><p>打开Charles，在<code>proxy</code>–&gt;<code>proxy settings</code>–&gt;<code>proxies</code>中设置要监听的端口号，一般为<strong>8080</strong></p>
+</li>
+<li><p>查看本机ip，</p>
+<pre><code><span class="variable">$ </span>ifconfig
+</code></pre></li>
+<li><p>记住本机的ip地址，如<strong>222.11.22.11</strong></p>
+</li>
+<li>将android手机连上wifi，确保与电脑处于<strong>同一</strong>ip段。</li>
+<li><p>一般在wifi连接的<strong>高级设置</strong>里可以找到<strong>代理设置</strong>，将代理设置改为<strong>手动</strong>，<br>填入刚才记下的ip地址，以及Charles里设置的端口号<strong>8080</strong>，保存后退出。<br>现在手机的网络请求都会被转发到Charles上。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/03/21/how-to-view-network-requests-on-android/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/tcpdump/">tcpdump</a><a href="/tags/抓包/">抓包</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/03/21/how-to-view-network-requests-on-android/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+
+</div>
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>2</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/bitmap/" title="bitmap">bitmap<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vo/" title="vo">vo<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/drawable/" title="drawable">drawable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/paint/" title="paint">paint<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/抓包/" title="抓包">抓包<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://lwn.me" target="_blank" title="Fatter&#39;s Blog">Fatter&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello, I&#39;m Fatter in Google. <br/>
+			This is my blog, believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/fatterx" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/fatterx" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:lwn888@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2015 
+		
+		<a href="/about" target="_blank" title="Fatter">Fatter</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'fatterx';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-48995178-1', 'lwn.me');  
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+ </html>
