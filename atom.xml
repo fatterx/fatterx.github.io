@@ -1,0 +1,865 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  
+  <title><![CDATA[Fatter's Blog]]></title>
+  <subtitle><![CDATA[让我们忠于理想，让我们面对现实]]></subtitle>
+  <link href="/atom.xml" rel="self"/>
+  <link href="http://lwn.me//"/>
+  <updated>2015-08-12T10:12:27.000Z</updated>
+  <id>http://lwn.me//</id>
+  
+  <author>
+    <name><![CDATA[Fatter]]></name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[Android PluginManager 源码解析4--ActivityOverider]]></title>
+    <link href="http://lwn.me/2015/08/12/android-pluginmanager-source-code-analysis-4/"/>
+    <id>http://lwn.me/2015/08/12/android-pluginmanager-source-code-analysis-4/</id>
+    <published>2015-08-12T10:11:29.000Z</published>
+    <updated>2015-08-12T10:12:27.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="ActivityOverider概述">ActivityOverider概述</h2><p><code>ActivityOverider</code>负责与动态生成的<code>PluginActivity</code>交互。</p>
+<p><code>ActivityOverider</code>主要干了3件事：</p>
+<ul>
+<li>修正StartActivity的Intent</li>
+<li>动态生成<code>PluginActivity</code>的Dex文件</li>
+<li>处理<code>PluginActivity</code>生命周期的回调，根据需要做一些特殊处理</li>
+</ul>
+<h2 id="overrideStartActivityForResult方法解析">overrideStartActivityForResult方法解析</h2><p>由于插件内的Activity没有在<code>AndroidManifest.xml</code>中注册，只注册了<code>androidx.pluginmgr.PluginActivity</code>，当通过<code>Context.startActivtiyForResult()</code>调起目标Activity时会找不到，所以需要对系统的<code>Context.startActivtiyForResult()</code>进行劫持，把要启动的Activity指向<code>androidx.pluginmgr.PluginActivity</code>，当加载<code>PluginActivity</code>时，通过<code>FrameworkClassLoader.loadClass()</code>方法再把类的加载路径修正回目标Activity，对系统进行了一个瞒天过海，骗过单纯的系统，哈哈。</p>
+<p>startActivity可能启动的是插件内部的Activity，也可能是宿主的Activity，也可能是其它插件的Activity，这一切都交由<code>overrideStartActivityForResult()</code>方法处理。</p>
+<a id="more"></a>
+<ul>
+<li><h3 id="启动明确指定类名的Activity">启动明确指定类名的Activity</h3></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">		</span><br><span class="line"><span class="comment">// 取出ComponentName</span></span><br><span class="line">ComponentName compname = intent.getComponent();</span><br><span class="line"><span class="comment">// 取包名</span></span><br><span class="line">String pkg = compname.getPackageName();</span><br><span class="line"><span class="comment">// 取Activity类名</span></span><br><span class="line">String toActName = compname.getClassName();</span><br><span class="line"><span class="comment">// 根据插件id取缓存PluginInfo</span></span><br><span class="line">PlugInfo thisPlugin = mgr.getPluginById(pluginId);</span><br><span class="line">ActivityInfo actInThisApk = <span class="keyword">null</span>;</span><br><span class="line">PlugInfo plug = thisPlugin;</span><br><span class="line"><span class="keyword">if</span> (pkg != <span class="keyword">null</span>) &#123;</span><br><span class="line">	<span class="comment">// 启动同一插件内的Activity</span></span><br><span class="line">	<span class="keyword">if</span> (pkg.equals(thisPlugin.getPackageName())) &#123;</span><br><span class="line">		actInThisApk = thisPlugin</span><br><span class="line">				.findActivityByClassName(toActName);</span><br><span class="line">	<span class="comment">// 启动另一插件内的Activity</span></span><br><span class="line">	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		PlugInfo otherPlug = mgr.getPluginByPackageName(pkg);</span><br><span class="line">		<span class="keyword">if</span> (otherPlug != <span class="keyword">null</span>) &#123;</span><br><span class="line">			plug = otherPlug;</span><br><span class="line">			actInThisApk = otherPlug</span><br><span class="line">					.findActivityByClassName(toActName);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	<span class="comment">// 容错处理，启动同一插件内的Activity</span></span><br><span class="line">	actInThisApk = thisPlugin.findActivityByClassName(toActName);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">setPluginIntent(intent, plug, actInThisApk.name);</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="启动有具体Action的Activity">启动有具体Action的Activity</h3></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">String action = intent.getAction();</span><br><span class="line">PlugInfo thisPlugin = mgr.getPluginById(pluginId);</span><br><span class="line">ActivityInfo actInThisApk = thisPlugin.findActivityByAction(action);</span><br><span class="line">			</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">setPluginIntent(intent, thisPlugin, actInThisApk.name);</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="偷天换日，修改Intent">偷天换日，修改Intent</h3></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setPluginIntent</span><span class="params">(Intent intent, PlugInfo plugin,</span><br><span class="line">			String actName)</span> </span>&#123;</span><br><span class="line">	PluginManager mgr = PluginManager.getInstance();</span><br><span class="line">	String pluginId = plugin.getId();</span><br><span class="line">	<span class="comment">// 根据类名动态生成新的PluginActivity</span></span><br><span class="line">	createProxyDex(plugin, actName);</span><br><span class="line">	<span class="comment">// 修改Intent中的ComponentName，将其指向androidx.pluginmgr.PluginActivity</span></span><br><span class="line">	String act = mgr.getFrameworkClassLoader().newActivityClassName(</span><br><span class="line">				pluginId, actName);</span><br><span class="line">	ComponentName compname = <span class="keyword">new</span> ComponentName(mgr.getContext(), act);</span><br><span class="line">	intent.setComponent(compname);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="动态生成PluginActivity">动态生成PluginActivity</h2><p>通过<code>createProxyDex()</code>为要加载的Activity生成代理类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	String pkgName = plugin.getPackageName();</span><br><span class="line">	ActivityClassGenerator.createActivityDex(activity, targetClassName,</span><br><span class="line">			saveDir, plugin.getId(), pkgName);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">	Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>具体生成机制委托给<code>ActivityClassGenerator</code>实现，后面再分析。</p>
+<h2 id="Activity生命周期回调">Activity生命周期回调</h2><p><code>PluginActivity</code>的一些生命周期方法会回调到<code>ActivityOverider</code>里。</p>
+<p>比较重要的几个有<code>overrideAttachBaseContext()</code>，<code>callback_onCreate()</code></p>
+<p>先看<code>overrideAttachBaseContext()</code>。</p>
+<h3 id="overrideAttachBaseContext()">overrideAttachBaseContext()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PlugInfo plugin = PluginManager.getInstance().getPluginById(pluginId);</span><br><span class="line"><span class="keyword">if</span> (plugin.getApplication() == <span class="keyword">null</span>) &#123;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		PluginManager.getInstance().initPluginApplication(plugin,</span><br><span class="line">				<span class="keyword">null</span>);</span><br><span class="line">	&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">		Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">PluginActivityWrapper actWrapper = <span class="keyword">new</span> PluginActivityWrapper(base, plugin.appWrapper, plugin);</span><br><span class="line"><span class="keyword">return</span> <span class="keyword">new</span> Object[] &#123; actWrapper, plugin.getAssetManager() &#125;;</span><br></pre></td></tr></table></figure>
+<p><code>overrideAttachBaseContext()</code>方法是为了更改Activity中的Context，把默认宿主的Context替换为修改过后的插件Context。</p>
+<p>由于Activity是继承自<code>ContextThemeWrapper</code>，而Application是继承<code>ContextWrapper</code>，所以这里不能直接使用<code>PluginContextWrapper</code>，而是把在Application初始化时生成的<code>PluginContextWrapper</code>注入继承自<code>ContextThemeWrapper</code>的<code>PluginActivityWrapper</code>。</p>
+<p>这样插件Application的Context与插件Activity的Context便在行为上一致了。</p>
+<p>接着来看<code>callback_onCreate()</code>。</p>
+<h3 id="callback_onCreate()">callback_onCreate()</h3><ul>
+<li><code>callback_onCreate()</code>先替换了Activity的Application。</li>
+</ul>
+<p>因为<code>PluginActivity</code>实际还是在宿主中调起的，所以默认的Context、Application都是宿主的。既然Context已经替换了，那Application也不能漏掉。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">		</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	Field applicationField = Activity.class</span><br><span class="line">			.getDeclaredField(<span class="string">"mApplication"</span>);</span><br><span class="line">	applicationField.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">	applicationField.set(fromAct, plugin.getApplication());</span><br><span class="line">&#125;  <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">	e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li>处理activity的主题</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">		</span><br><span class="line"><span class="comment">// PluginActivity是动态生成并继承与原来的Activity，所以此处需要取supperClass的name</span></span><br><span class="line">String actName = fromAct.getClass().getSuperclass().getName();</span><br><span class="line"><span class="comment">// 从通过PluginManifestUtil解析的Activity list中查找当前Activity的ActivityInfo</span></span><br><span class="line">ActivityInfo actInfo = plugin.findActivityByClassName(actName);</span><br><span class="line"><span class="keyword">int</span> resTheme = actInfo.getThemeResource();</span><br><span class="line"><span class="comment">// 如果使用了主题</span></span><br><span class="line"><span class="keyword">if</span> (resTheme != <span class="number">0</span>) &#123;</span><br><span class="line">	<span class="keyword">boolean</span> hasNotSetTheme = <span class="keyword">true</span>;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		Field mTheme = ContextThemeWrapper.class</span><br><span class="line">				.getDeclaredField(<span class="string">"mTheme"</span>);</span><br><span class="line">		mTheme.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">		<span class="comment">// 判断PluginActivity的mTheme字段是否为空，为空表示没有设置过主题</span></span><br><span class="line">		hasNotSetTheme = mTheme.get(fromAct) == <span class="keyword">null</span>;</span><br><span class="line">	&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">		e.printStackTrace();</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (hasNotSetTheme) &#123;</span><br><span class="line">		<span class="comment">// 替换PluginActivity的mActivityInfo</span></span><br><span class="line">		changeActivityInfo(fromAct);</span><br><span class="line">		fromAct.setTheme(resTheme);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>这里为何在设置了主题后才替换mActivityInfo，暂时还没有看懂。</p>
+<ul>
+<li>替换PluginActivity的mActivityInfo</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">Field field_mActivityInfo=<span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	field_mActivityInfo = Activity.class.getDeclaredField(<span class="string">"mActivityInfo"</span>);</span><br><span class="line">	field_mActivityInfo.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">&#125;  <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">	Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line">PluginManager con = PluginManager.getInstance();</span><br><span class="line">PlugInfo plugin = con.getPluginByPackageName(activity.getPackageName());</span><br><span class="line"></span><br><span class="line">ActivityInfo actInfo = plugin.findActivityByClassName(actName);</span><br><span class="line">actInfo.applicationInfo = plugin.getPackageInfo().applicationInfo;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	field_mActivityInfo.set(activity, actInfo);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">	Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li>处理回调</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PluginActivityLifeCycleCallback callback = PluginManager.getInstance()</span><br><span class="line">		.getPluginActivityLifeCycleCallback();</span><br><span class="line"><span class="keyword">if</span> (callback != <span class="keyword">null</span>) &#123;</span><br><span class="line">	callback.onCreate(pluginId, fromAct);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果注册了<code>PluginActivityLifeCycleCallback</code>，会在相应的生命周期内触发回调。</p>
+<p>剩下一些其他的生命周期没有做额外的处理，只是处理了<code>PluginActivityLifeCycleCallback</code>回调，就略过了。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="ActivityOverider概述">ActivityOverider概述</h2><p><code>ActivityOverider</code>负责与动态生成的<code>PluginActivity</code>交互。</p>
+<p><code>ActivityOverider</code>主要干了3件事：</p>
+<ul>
+<li>修正StartActivity的Intent</li>
+<li>动态生成<code>PluginActivity</code>的Dex文件</li>
+<li>处理<code>PluginActivity</code>生命周期的回调，根据需要做一些特殊处理</li>
+</ul>
+<h2 id="overrideStartActivityForResult方法解析">overrideStartActivityForResult方法解析</h2><p>由于插件内的Activity没有在<code>AndroidManifest.xml</code>中注册，只注册了<code>androidx.pluginmgr.PluginActivity</code>，当通过<code>Context.startActivtiyForResult()</code>调起目标Activity时会找不到，所以需要对系统的<code>Context.startActivtiyForResult()</code>进行劫持，把要启动的Activity指向<code>androidx.pluginmgr.PluginActivity</code>，当加载<code>PluginActivity</code>时，通过<code>FrameworkClassLoader.loadClass()</code>方法再把类的加载路径修正回目标Activity，对系统进行了一个瞒天过海，骗过单纯的系统，哈哈。</p>
+<p>startActivity可能启动的是插件内部的Activity，也可能是宿主的Activity，也可能是其它插件的Activity，这一切都交由<code>overrideStartActivityForResult()</code>方法处理。</p>]]>
+    
+    </summary>
+    
+      <category term="ContextWrapper" scheme="http://lwn.me/tags/ContextWrapper/"/>
+    
+      <category term="PluginActivity" scheme="http://lwn.me/tags/PluginActivity/"/>
+    
+      <category term="插件" scheme="http://lwn.me/tags/%E6%8F%92%E4%BB%B6/"/>
+    
+      <category term="android" scheme="http://lwn.me/categories/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[Android PluginManager 源码解析3--PluginManifestUtil]]></title>
+    <link href="http://lwn.me/2015/08/11/android-pluginmanager-source-code-analysis-3/"/>
+    <id>http://lwn.me/2015/08/11/android-pluginmanager-source-code-analysis-3/</id>
+    <published>2015-08-11T07:12:55.000Z</published>
+    <updated>2015-08-12T10:09:34.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="PluginManifestUtil分析">PluginManifestUtil分析</h2><p><strong>PluginManifestUtil</strong>是<strong>Android PluginManager</strong>的一个工具类。只有一个公共方法<code>setManifestInfo()</code>，负责解析插件apk中的androidManifest.xml文件，并将解析的信息保存到<code>PluginInfo</code>中。</p>
+<ul>
+<li><h3 id="解析PackageInfo">解析PackageInfo</h3></li>
+</ul>
+<p>通过<code>PackageManager</code>获取插件apk文件的<code>PackageInfo</code>，保持在<code>PluginInfo</code>中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PackageInfo pkgInfo = context.getPackageManager()</span><br><span class="line">		.getPackageArchiveInfo(</span><br><span class="line">				apkPath,</span><br><span class="line">				PackageManager.GET_ACTIVITIES</span><br><span class="line">						| PackageManager.GET_RECEIVERS<span class="comment">//</span></span><br><span class="line">						| PackageManager.GET_PROVIDERS<span class="comment">//</span></span><br><span class="line">						| PackageManager.GET_META_DATA<span class="comment">//</span></span><br><span class="line">						| PackageManager.GET_SHARED_LIBRARY_FILES<span class="comment">//</span></span><br><span class="line">		<span class="comment">// | PackageManager.GET_SERVICES//</span></span><br><span class="line">		<span class="comment">// | PackageManager.GET_SIGNATURES//</span></span><br><span class="line">		);</span><br><span class="line"><span class="comment">// Log.d("ManifestReader: setManifestInfo", "GET_SHARED_LIBRARY_FILES="</span></span><br><span class="line"><span class="comment">// + pkgInfo.applicationInfo.nativeLibraryDir);</span></span><br><span class="line">info.setPackageInfo(pkgInfo);</span><br></pre></td></tr></table></figure>
+<p><code>PackageInfo</code>保存有插件apk的包名、版本、注册的activities、services、receivers、providers、声明的权限等信息。<br>但是<strong>Android PluginManager</strong>目前只处理了activities、receivers。</p>
+<a id="more"></a>
+<ul>
+<li><h3 id="处理so文件">处理so文件</h3></li>
+</ul>
+<p>查找插件apk中的<code>lib</code>中的so文件，并解压到<code>PluginBaseDir</code>即<code>PluginManager</code>中<code>dexInternalStoragePath</code> + <code>pluginId</code>+<code>lib</code>下面。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">File libdir = ActivityOverider.getPluginLibDir(info.getId());</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	<span class="keyword">if</span>(extractLibFile(zipFile, libdir))&#123;</span><br><span class="line">		pkgInfo.applicationInfo.nativeLibraryDir=libdir.getAbsolutePath();</span><br><span class="line">	&#125;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">	zipFile.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查找过程会根据设备cpu架构copy相应的文件到<code>PluginBaseDir</code>。</p>
+<ul>
+<li><h3 id="自定义解析manifest-xml">自定义解析manifest.xml</h3></li>
+</ul>
+<p>使用<code>XmlManifestReader.getManifestXMLFromAPK()</code>读取插件apk中的manifest文件，然后通过<code>setAttrs()</code>方法解析manifest文件，把activity、reciever、application的信息保存在<code>PluginInfo</code>中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">ZipFile zipFile = <span class="keyword">new</span> ZipFile(<span class="keyword">new</span> File(apkPath), ZipFile.OPEN_READ);</span><br><span class="line">ZipEntry manifestXmlEntry = zipFile.getEntry(XmlManifestReader.DEFAULT_XML);</span><br><span class="line"></span><br><span class="line">String manifestXML = XmlManifestReader.getManifestXMLFromAPK(zipFile,</span><br><span class="line">		manifestXmlEntry);</span><br><span class="line">		</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">setAttrs(info, manifestXML);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="绑定manifestXml信息到PluginInfo">绑定manifestXml信息到PluginInfo</h3></li>
+</ul>
+<p>分别解析application、activity、reciever、service的信息，并绑定到<code>PluginInfo</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">do &#123;</span><br><span class="line">	<span class="keyword">switch</span> (eventType) &#123;</span><br><span class="line">	<span class="keyword">case</span> XmlPullParser.START_DOCUMENT: &#123;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">case</span> XmlPullParser.START_TAG: &#123;</span><br><span class="line">		String tag = parser.getName();</span><br><span class="line">		<span class="keyword">if</span> (tag.equals(<span class="string">"manifest"</span>)) &#123;</span><br><span class="line">			namespaceAndroid = parser.getNamespace(<span class="string">"android"</span>);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"activity"</span>.equals(parser.getName())) &#123;</span><br><span class="line">			addActivity(info, namespaceAndroid, parser);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"receiver"</span>.equals(parser.getName())) &#123;</span><br><span class="line">			addReceiver(info, namespaceAndroid, parser);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"service"</span>.equals(parser.getName())) &#123;</span><br><span class="line">			addService(info, namespaceAndroid, parser);</span><br><span class="line">		&#125;<span class="keyword">else</span> <span class="keyword">if</span>(<span class="string">"application"</span>.equals(parser.getName()))&#123;</span><br><span class="line">			parseApplicationInfo(info, namespaceAndroid, parser);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">case</span> XmlPullParser.END_TAG: &#123;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	eventType = parser.next();</span><br><span class="line">&#125; <span class="keyword">while</span> (eventType != XmlPullParser.END_DOCUMENT);</span><br></pre></td></tr></table></figure>
+<p>下面已activity为例分析。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">ResolveInfo act = <span class="keyword">new</span> ResolveInfo();</span><br><span class="line">act.activityInfo = info.findActivityByClassNameFromPkg(activityName);</span><br><span class="line">do &#123;</span><br><span class="line">	<span class="keyword">switch</span> (eventType) &#123;</span><br><span class="line">	<span class="keyword">case</span> XmlPullParser.START_TAG: &#123;</span><br><span class="line">		String tag = parser.getName();</span><br><span class="line">		<span class="keyword">if</span> (<span class="string">"intent-filter"</span>.equals(tag)) &#123;</span><br><span class="line">			<span class="keyword">if</span> (act.filter == <span class="keyword">null</span>) &#123;</span><br><span class="line">				act.filter = <span class="keyword">new</span> IntentFilter();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"action"</span>.equals(tag)) &#123;</span><br><span class="line">			String actionName = parser.getAttributeValue(namespace,</span><br><span class="line">					<span class="string">"name"</span>);</span><br><span class="line">			act.filter.addAction(actionName);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"category"</span>.equals(tag)) &#123;</span><br><span class="line">			String category = parser.getAttributeValue(namespace,</span><br><span class="line">					<span class="string">"name"</span>);</span><br><span class="line">			act.filter.addCategory(category);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"data"</span>.equals(tag)) &#123;</span><br><span class="line">			<span class="comment">// TODO parse data</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	eventType = parser.next();</span><br><span class="line">&#125; <span class="keyword">while</span> (!<span class="string">"activity"</span>.equals(parser.getName()));</span><br><span class="line"><span class="comment">//</span></span><br><span class="line">info.addActivity(act);</span><br></pre></td></tr></table></figure>
+<p>模拟系统解析<code>ResolveInfo</code>的方式，为每一个插件apk中注册的Activity生成一个<code>ResolveInfo</code>，保存在<code>PluginInfo</code>中，供之后获取指定<code>Intent-Filter</code>的Activity、Service等使用。</p>
+<p>目前对于<code>intent-filter</code>中的<code>data</code>标签没有处理。</p>
+<h2 id="参考">参考</h2><ol>
+<li><a href="http://developer.android.com/reference/android/content/pm/ResolveInfo.html" target="_blank" rel="external">ResolveInfo</a></li>
+<li><a href="http://blog.csdn.net/wang_yubin/article/details/8564335" target="_blank" rel="external">android ResolveInfo运用</a></li>
+<li><a href="http://blog.csdn.net/lo5sea/article/details/38564991" target="_blank" rel="external">PackageInfo、ResolveInfo</a></li>
+</ol>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="PluginManifestUtil分析">PluginManifestUtil分析</h2><p><strong>PluginManifestUtil</strong>是<strong>Android PluginManager</strong>的一个工具类。只有一个公共方法<code>setManifestInfo()</code>，负责解析插件apk中的androidManifest.xml文件，并将解析的信息保存到<code>PluginInfo</code>中。</p>
+<ul>
+<li><h3 id="解析PackageInfo">解析PackageInfo</h3></li>
+</ul>
+<p>通过<code>PackageManager</code>获取插件apk文件的<code>PackageInfo</code>，保持在<code>PluginInfo</code>中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PackageInfo pkgInfo = context.getPackageManager()</span><br><span class="line">		.getPackageArchiveInfo(</span><br><span class="line">				apkPath,</span><br><span class="line">				PackageManager.GET_ACTIVITIES</span><br><span class="line">						| PackageManager.GET_RECEIVERS<span class="comment">//</span></span><br><span class="line">						| PackageManager.GET_PROVIDERS<span class="comment">//</span></span><br><span class="line">						| PackageManager.GET_META_DATA<span class="comment">//</span></span><br><span class="line">						| PackageManager.GET_SHARED_LIBRARY_FILES<span class="comment">//</span></span><br><span class="line">		<span class="comment">// | PackageManager.GET_SERVICES//</span></span><br><span class="line">		<span class="comment">// | PackageManager.GET_SIGNATURES//</span></span><br><span class="line">		);</span><br><span class="line"><span class="comment">// Log.d("ManifestReader: setManifestInfo", "GET_SHARED_LIBRARY_FILES="</span></span><br><span class="line"><span class="comment">// + pkgInfo.applicationInfo.nativeLibraryDir);</span></span><br><span class="line">info.setPackageInfo(pkgInfo);</span><br></pre></td></tr></table></figure>
+<p><code>PackageInfo</code>保存有插件apk的包名、版本、注册的activities、services、receivers、providers、声明的权限等信息。<br>但是<strong>Android PluginManager</strong>目前只处理了activities、receivers。</p>]]>
+    
+    </summary>
+    
+      <category term="PackageInfo" scheme="http://lwn.me/tags/PackageInfo/"/>
+    
+      <category term="PackageManager" scheme="http://lwn.me/tags/PackageManager/"/>
+    
+      <category term="ResolveInfo" scheme="http://lwn.me/tags/ResolveInfo/"/>
+    
+      <category term="androidManifest" scheme="http://lwn.me/tags/androidManifest/"/>
+    
+      <category term="插件" scheme="http://lwn.me/tags/%E6%8F%92%E4%BB%B6/"/>
+    
+      <category term="android" scheme="http://lwn.me/categories/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[Android PluginManager 源码解析2--FrameworkClassLoader]]></title>
+    <link href="http://lwn.me/2015/08/10/android-pluginmanager-source-code-analysis-2/"/>
+    <id>http://lwn.me/2015/08/10/android-pluginmanager-source-code-analysis-2/</id>
+    <published>2015-08-10T13:12:55.000Z</published>
+    <updated>2015-08-12T10:09:18.000Z</updated>
+    <content type="html"><![CDATA[<p>学习<strong>Android PluginManager</strong>加载插件的机制，需要先了解系统是如何加载Activity的。</p>
+<h2 id="Android_启动Activity的机制">Android 启动Activity的机制</h2><p>Android系统的Activity是通过 <code>AndroidThread</code>.<code>performLaunchActivity()</code>方法生成并启动的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Activity activity = <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    java.lang.ClassLoader cl = r.packageInfo.getClassLoader();</span><br><span class="line">    activity = mInstrumentation.newActivity(</span><br><span class="line">            cl, component.getClassName(), r.intent);</span><br><span class="line">    StrictMode.incrementExpectedActivityCount(activity.getClass());</span><br><span class="line">    r.intent.setExtrasClassLoader(cl);</span><br><span class="line">    r.intent.prepareToEnterProcess();</span><br><span class="line">    <span class="keyword">if</span> (r.state != <span class="keyword">null</span>) &#123;</span><br><span class="line">        r.state.setClassLoader(cl);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!mInstrumentation.onException(activity, e)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</span><br><span class="line">            <span class="string">"Unable to instantiate activity "</span> + component</span><br><span class="line">            + <span class="string">": "</span> + e.toString(), e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>r.packageInfo</code>是一个<code>LoadedApk</code>对象，保存了加载dex中class文件的ClassLoader，默认是系统的<code>PathClassLoader</code>。</p>
+<p>通过<code>AndroidThread</code>源码，看出<code>AndroidThread</code>通过委托给<code>Instrumentation</code>的<code>newActivity()</code>方法生成Activity。</p>
+<a id="more"></a>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Activity <span class="title">newActivity</span><span class="params">(ClassLoader cl, String className,</span><br><span class="line">        Intent intent)</span></span><br><span class="line">        <span class="keyword">throws</span> InstantiationException, IllegalAccessException,</span><br><span class="line">        ClassNotFoundException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (Activity)cl.loadClass(className).newInstance();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>newActivity()</code>方法使用注入的ClassLoader直接load Activity的类名生成activity。</p>
+<p>由于默认是系统的<code>PathClassLoader</code>，不支持从apk中加载类文件，所以我们需要更改ClassLoader来实现加载插件apk中的类文件。</p>
+<p>之前<strong>Android PluginManager</strong>在初始化的时候通过反射更改了Context的ClassLoader .</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">            Object mPackageInfo = ReflectionUtils.getFieldValue(ctx,</span><br><span class="line">                    <span class="string">"mBase.mPackageInfo"</span>, <span class="keyword">true</span>);</span><br><span class="line">            frameworkClassLoader = <span class="keyword">new</span> FrameworkClassLoader(</span><br><span class="line">                    ctx.getClassLoader());</span><br><span class="line">            <span class="comment">// set Application's classLoader to FrameworkClassLoader</span></span><br><span class="line">            ReflectionUtils.setFieldValue(mPackageInfo, <span class="string">"mClassLoader"</span>,</span><br><span class="line">                    frameworkClassLoader, <span class="keyword">true</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>mBase</code>就是<code>ContextImpl</code>，具体原因参见<a href="/2015/08/09/android-pluginmanager-source-code-analysis-1/#初始化插件的application">分析1</a>中ContextWapper的解释。</p>
+<p><code>r.packageInfo</code>和<code>ContexImpl</code>的<code>mPackageInfo</code>是同一对象。</p>
+<p>这样之后在加载Activity类文件时就会使用替换过的<code>FrameworkClassLoader</code>了。</p>
+<h2 id="FrameworkClassLoader">FrameworkClassLoader</h2><p><code>FrameworkClassLoader</code>职责比较简单，主要负责根据不同的类名选择不同的classLoader加载。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">if</span> (plugId != <span class="keyword">null</span>) &#123;</span><br><span class="line">	String pluginId = plugId;</span><br><span class="line"></span><br><span class="line">	PlugInfo plugin = PluginManager.getInstance().getPluginById(</span><br><span class="line">			pluginId);</span><br><span class="line">	<span class="keyword">if</span> (plugin != <span class="keyword">null</span>) &#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (className.equals(ActivityOverider.targetClassName)) &#123;</span><br><span class="line">				String actClassName = actName;</span><br><span class="line">				<span class="keyword">return</span> plugin.getClassLoader().loadActivityClass(</span><br><span class="line">						actClassName);</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> plugin.getClassLoader().loadClass(className);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> <span class="keyword">super</span>.loadClass(className, resolv);</span><br></pre></td></tr></table></figure>
+<p>这里有三种情况：</p>
+<ul>
+<li><p>加载插件中的Activity类</p>
+<p>当<code>className</code>为<code>androidx.pluginmgr.PluginActivity</code>时，说明要加载的类是由<strong>Android PluginManager</strong>自动生成的activity代理类，具体加载实现交由<code>PluginClassLoader.loadActivityClass()</code>处理。</p>
+</li>
+<li><p>加载插件中非Activity类</p>
+<p>当<code>className</code>为插件的其它自定义类时，选择<code>PluginClassLoader.loadClass()</code>加载。</p>
+</li>
+<li><p>加载宿主中的类</p>
+</li>
+</ul>
+<p>不是插件中的类，或者插件中的类加载异常了，选择默认的ClassLoader加载类。</p>
+<p>引用<a href="http://blog.csdn.net/hkxxx/article/details/42194387" target="_blank" rel="external">作者hkxxx大神</a>的两张图作说明：</p>
+<p><img src="/img/frameworkclassloader.png" alt="插件启动流程图"></p>
+<p><img src="/img/am_frameworkclassloader_class_diagram.png" alt="framwork classloader类加载结构"></p>
+<h2 id="PluginClassLoader">PluginClassLoader</h2><p><code>PluginClassLoader</code>继承自<code>DexClassLoader</code>，使用<code>FrameworkClassLoader</code>作为其委托的父ClassLoader。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// pluginManager初始化时实例化的PluginClassLoader</span></span><br><span class="line">PluginClassLoader loader = <span class="keyword">new</span> PluginClassLoader(dexPath,</span><br><span class="line">               dexOutputPath, frameworkClassLoader, info);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// PluginClassLoader构造函数</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">PluginClassLoader</span><span class="params">(String dexPath, String optimizedDir, ClassLoader parent, PlugInfo plugin)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">super</span>(dexPath, optimizedDir,plugin.getPackageInfo().applicationInfo.nativeLibraryDir,parent);</span><br><span class="line">	thisPlugin = plugin;</span><br><span class="line">	proxyActivityLoaderMap = <span class="keyword">new</span> HashMap&lt;String, ClassLoader&gt;(plugin.getActivities().size());</span><br><span class="line">	<span class="keyword">this</span>.libraryPath = plugin.getPackageInfo().applicationInfo.nativeLibraryDir;</span><br><span class="line">	<span class="keyword">this</span>.optimizedDirectory = optimizedDir;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>PluginClassLoader</code>维护一个DexClassLoader的map，缓存插件每个Activity的classLoader。</p>
+<p>为什么需要为每一个Activity都生成一个classloader呢？</p>
+<p>接着看<code>loadActivityClass()</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Class&lt;?&gt; loadActivityClass(<span class="keyword">final</span> String actClassName) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">	File dexSavePath = ActivityOverider.createProxyDex(thisPlugin, actClassName, <span class="keyword">true</span>);</span><br><span class="line">	ClassLoader actLoader = proxyActivityLoaderMap.get(actClassName);</span><br><span class="line">	<span class="keyword">if</span> (actLoader == <span class="keyword">null</span>) &#123;</span><br><span class="line">		actLoader = <span class="keyword">new</span> DexClassLoader(dexSavePath.getAbsolutePath(), optimizedDirectory,libraryPath, <span class="keyword">this</span>)&#123;</span><br><span class="line">			<span class="annotation">@Override</span></span><br><span class="line">			<span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">				Log.d(<span class="string">"PlugActClassLoader("</span>+ actClassName+<span class="string">")"</span>, <span class="string">"loadClass: "</span> + name);</span><br><span class="line">				<span class="keyword">if</span> (ActivityOverider.targetClassName.equals(name)) &#123;</span><br><span class="line">					Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">					<span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">						Log.d(<span class="string">"PlugActClassLoader("</span>+ actClassName+<span class="string">")"</span>, <span class="string">"findClass"</span>);</span><br><span class="line">						c = findClass(name);</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">if</span> (resolve) &#123;</span><br><span class="line">						resolveClass(c);</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">return</span> c;</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">return</span> <span class="keyword">super</span>.loadClass(name, resolve);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;;</span><br><span class="line">		proxyActivityLoaderMap.put(actClassName, actLoader);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> actLoader.loadClass(ActivityOverider.targetClassName);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>原来，<code>loadActivityClass()</code>方法在加载插件的Activity之前，为每个Activity使用<strong>dexmaker</strong>动态生成了一个代理的<code>PluginActivity</code>继承自原Activity，这样插件中的每个Activity都有一个<code>PluginActivity.dex</code>文件。</p>
+<p>另外，由于<a href="http://www.trinea.cn/android/java-loader-common-class/" target="_blank" rel="external">ClassLoader隔离问题</a>，必须把每个classloader缓存起来，以免下次重新加载同一类会报类型转换失败的错。</p>
+<p>这里new的DexClassLoader重载了<code>loadClass()</code>方法，当要加载类是<code>androidx.pluginmgr.PluginActivity</code>时 ，更改了默认的查找方式，不再先从parent Classloader中查找，而是直接自己查找类文件。</p>
+<p>值得注意的是，生成<code>PluginActivity.dex</code>的过程一直处于主线程，其中进行了大量的文件操作，可能会引起ANR。</p>
+<p>剩下就是重载ClassLoader的<code>loadClass()</code>方法了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve)</span><br><span class="line">			<span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">		<span class="keyword">synchronized</span> (getClassLoadingLock(name)) &#123;</span><br><span class="line">			<span class="comment">// First, check if the class has already been loaded</span></span><br><span class="line">			Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">			<span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">if</span>(name.startsWith(<span class="string">"android.support."</span>))&#123;</span><br><span class="line">					<span class="keyword">try</span> &#123;</span><br><span class="line">						c = findClass(name);</span><br><span class="line">					&#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">						c = findByParent(name, <span class="keyword">true</span>);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">					c = findByParent(name, <span class="keyword">false</span>);</span><br><span class="line">					<span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">						c = findClass(name);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (resolve) &#123;</span><br><span class="line">				resolveClass(c);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span> c;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>这里判断了如果类名是以<code>android.support.</code>开头，说明是support包里的类，优先从当前的classloader加载，在插件中找不到时再从宿主中查找，避免与宿主support包冲突。</p>
+<p>如果类名不以<code>android.support.</code>开头，则还是遵循java的ClassLoader的加载类的方式，先委托给parent查找，找不到再从自己查找。</p>
+<p><code>findByParent()</code>方法是为了查找真正宿主的ClassLoader。先取当前ClassLoader的parent ClassLoader，如果是FrameworkClassLoader的话，继续向上查找，即是宿主的ClassLoader。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Class&lt;?&gt; c =<span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	ClassLoader parent = getParent();</span><br><span class="line">	<span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">			<span class="keyword">if</span> (parent.getClass() == FrameworkClassLoader.class) &#123;</span><br><span class="line">				parent = parent.getParent();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">				c = parent.loadClass(name);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">	<span class="keyword">if</span>(throwEx)&#123;</span><br><span class="line">		<span class="keyword">throw</span> e;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> c;</span><br></pre></td></tr></table></figure>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>学习<strong>Android PluginManager</strong>加载插件的机制，需要先了解系统是如何加载Activity的。</p>
+<h2 id="Android_启动Activity的机制">Android 启动Activity的机制</h2><p>Android系统的Activity是通过 <code>AndroidThread</code>.<code>performLaunchActivity()</code>方法生成并启动的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Activity activity = <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    java.lang.ClassLoader cl = r.packageInfo.getClassLoader();</span><br><span class="line">    activity = mInstrumentation.newActivity(</span><br><span class="line">            cl, component.getClassName(), r.intent);</span><br><span class="line">    StrictMode.incrementExpectedActivityCount(activity.getClass());</span><br><span class="line">    r.intent.setExtrasClassLoader(cl);</span><br><span class="line">    r.intent.prepareToEnterProcess();</span><br><span class="line">    <span class="keyword">if</span> (r.state != <span class="keyword">null</span>) &#123;</span><br><span class="line">        r.state.setClassLoader(cl);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!mInstrumentation.onException(activity, e)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</span><br><span class="line">            <span class="string">"Unable to instantiate activity "</span> + component</span><br><span class="line">            + <span class="string">": "</span> + e.toString(), e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>r.packageInfo</code>是一个<code>LoadedApk</code>对象，保存了加载dex中class文件的ClassLoader，默认是系统的<code>PathClassLoader</code>。</p>
+<p>通过<code>AndroidThread</code>源码，看出<code>AndroidThread</code>通过委托给<code>Instrumentation</code>的<code>newActivity()</code>方法生成Activity。</p>]]>
+    
+    </summary>
+    
+      <category term="AndroidThread" scheme="http://lwn.me/tags/AndroidThread/"/>
+    
+      <category term="ClassLoader" scheme="http://lwn.me/tags/ClassLoader/"/>
+    
+      <category term="DexClassLoader" scheme="http://lwn.me/tags/DexClassLoader/"/>
+    
+      <category term="反射" scheme="http://lwn.me/tags/%E5%8F%8D%E5%B0%84/"/>
+    
+      <category term="插件" scheme="http://lwn.me/tags/%E6%8F%92%E4%BB%B6/"/>
+    
+      <category term="android" scheme="http://lwn.me/categories/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[Android PluginManager 源码解析1--PluginManager]]></title>
+    <link href="http://lwn.me/2015/08/09/android-pluginmanager-source-code-analysis-1/"/>
+    <id>http://lwn.me/2015/08/09/android-pluginmanager-source-code-analysis-1/</id>
+    <published>2015-08-08T16:00:00.000Z</published>
+    <updated>2015-08-12T08:57:03.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="Android_PluginManager简介">Android PluginManager简介</h2><p><strong>Android pluginManager</strong>是<a href="https://github.com/houkx/" target="_blank" rel="external">HouKangxi</a>大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。</p>
+<p>项目地址：<a href="">https://github.com/houkx/android-pluginmgr</a></p>
+<p>相比于其他的插件化解决方案，<strong>Android pluginManager</strong>主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。</p>
+<h3 id="实现的功能点：">实现的功能点：</h3><ul>
+<li>插件为普通apk，无须依赖任何jar(摘自<a href="http://blog.csdn.net/hkxxx/article/details/42194387" target="_blank" rel="external">作者的博客</a>)</li>
+<li>Activity生命周期由系统自己管理</li>
+<li>使用简单，只需要了解一个类PluginManager的两个方法</li>
+<li>启动Activity的效率高</li>
+<li>不修改插件，被加载的插件仍然可以独立安装。</li>
+<li>可加载任意apk中的 Activity (包括子类 ActionBarActivity 、FragmentActivity)的派生类(不包括违反限制条件的Activity)</li>
+<li>支持插件自定义Application</li>
+<li>支持插件Apk中的Activity跳转到别的Activity(插件内部的或系统的,外部已安装apk的，甚至是别的插件中的),也没有任何限制</li>
+<li>支持Activity设置主题(与系统的主题应用规则一样，如果Activity没指定Theme,但所在Application指定了Theme，则使用Application的Theme)</li>
+<li>初步支持.so</li>
+<li>支持插件使用 SharedPreference 或 SQLite数据库(尚未完善)</li>
+</ul>
+<a id="more"></a>
+<h3 id="尚未完成的部分：">尚未完成的部分：</h3><ul>
+<li>目前还不支持service、content provider</li>
+</ul>
+<h3 id="一些限制：">一些限制：</h3><ul>
+<li>插件中的权限，无法动态注册，插件中的权限都得在宿主中注册</li>
+<li>不支持多进程</li>
+<li>Manifest中注册的activity的目前只能使用一种launchMode，<br>要支持singleTask等多种launchMode，需要自己维护activity栈来模拟。</li>
+</ul>
+<h3 id="动态加载apk的思路：">动态加载apk的思路：</h3><p>就目前自己了解的情况来看，动态加载apk，一般是通过DexClassLoader，加载apk中的Activity。</p>
+<p>此时调起的Activity是普通的Java对象，没有了onCreate() 、onStart ()、onResume()、onPause()、onStop()、onDestory()等生命周期。</p>
+<p>为解决这个问题，一般都会在宿主中有一个ProxyActivity，它是一个真实的Activity，由系统管理它的生命周期。</p>
+<p>ProxyActivity持有一个插件的Activity的引用，当系统触发ProxyActivity的生命周期时，ProxyActivity通知插件的Activity来模拟正常Activity的生命周期。</p>
+<p>ProxyActivity通知插件的Activity方式分为两种：</p>
+<ul>
+<li>直接通过反射调用插件Activity的生命周期方法。效率较低</li>
+<li>插件Activity继承一个BasePluginActivity或者实现一个PluginInterface。对插件浸入性较大，需要改动较多代码。</li>
+</ul>
+<p>其中一个难点是插件资源文件的访问。</p>
+<p>由于Activity变成了普通的Java对象，没有了Context，不能通过getResources()直接访问插件中的资源。<br>解决方案有几种：</p>
+<ul>
+<li>把插件的资源复制到宿主中，向插件注入宿主的Context</li>
+<li>把插件的资源解压到sd卡某路径下，以流的形式读取，自己解析</li>
+<li>修改AssetManager，把插件的路径添加到AssetManager中</li>
+</ul>
+<h2 id="PluginManager初始化">PluginManager初始化</h2><ul>
+<li><h3 id="获取application_Context">获取application Context</h3></li>
+</ul>
+<p>PluginManager是一个单例，在初始化时将宿主（host）application Context 作为PluginManager的Context</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Context ctx = context.getApplicationContext();</span><br><span class="line"><span class="keyword">synchronized</span> (PluginManager.class) &#123;</span><br><span class="line">    instance.init(ctx);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="创建plugins目录">创建plugins目录</h3></li>
+</ul>
+<p>在<code>dexInternalStoragePath</code>目录下保存插件的原apk文件，及动态生成的新的dex文件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dexInternalStoragePath = context</span><br><span class="line">        .getDir(<span class="string">"plugins"</span>, Context.MODE_PRIVATE);</span><br><span class="line">dexInternalStoragePath.mkdirs();</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="创建pluginouts目录">创建pluginouts目录</h3></li>
+</ul>
+<p>在<code>dexOutputPath</code>目录下保存插件的原dex文件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">File optimizedDexPath = ctx.getDir(<span class="string">"plugsout"</span>, Context.MODE_PRIVATE);</span><br><span class="line"><span class="keyword">if</span> (!optimizedDexPath.exists()) &#123;</span><br><span class="line">    optimizedDexPath.mkdirs();</span><br><span class="line">&#125;</span><br><span class="line">dexOutputPath = optimizedDexPath.getAbsolutePath();</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="替换classLoader">替换classLoader</h3></li>
+</ul>
+<p>把宿主 application context 的<code>classLoader</code>通过反射替换为自定义的classLoader FrameworkClassLoader.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">          Object mPackageInfo = ReflectionUtils.getFieldValue(ctx,</span><br><span class="line">                  <span class="string">"mBase.mPackageInfo"</span>, <span class="keyword">true</span>);</span><br><span class="line">          frameworkClassLoader = <span class="keyword">new</span> FrameworkClassLoader(</span><br><span class="line">                  ctx.getClassLoader());</span><br><span class="line">          <span class="comment">// set Application's classLoader to FrameworkClassLoader</span></span><br><span class="line">          ReflectionUtils.setFieldValue(mPackageInfo, <span class="string">"mClassLoader"</span>,</span><br><span class="line">                  frameworkClassLoader, <span class="keyword">true</span>);</span><br><span class="line">      &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">          e.printStackTrace();</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="加载插件">加载插件</h2><ul>
+<li><h3 id="生成PluginInfo_对象保存插件信息">生成PluginInfo 对象保存插件信息</h3></li>
+</ul>
+<p>把生成的PluginInfo对象保存Map中缓存，记录当前加载的插件。这里保存PluginInfo时需要在调用插件的地方为插件传入一个id，如果id为null，则默认使用插件的包命作为插件id。</p>
+<p>会同时保持在<code>pluginIdToInfoMap</code>，<code>pluginPkgToInfoMap</code> 两个map中，此处有冗余的嫌疑。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PlugInfo info = <span class="keyword">new</span> PlugInfo();</span><br><span class="line">info.setId(pluginId == <span class="keyword">null</span> ? pluginApk.getName() : pluginId);</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">pluginPkgToInfoMap.put(plugInfo.getPackageName(), plugInfo);</span><br><span class="line">pluginIdToInfoMap.put(plugInfo.getId(), plugInfo);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="copy插件apk文件到dexInternalStoragePath目录下">copy插件apk文件到<code>dexInternalStoragePath</code>目录下</h3></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">File privateFile = <span class="keyword">new</span> File(dexInternalStoragePath,</span><br><span class="line">        targetFileName == <span class="keyword">null</span> ? pluginApk.getName() : targetFileName);</span><br><span class="line"></span><br><span class="line">info.setFilePath(privateFile.getAbsolutePath());</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!pluginApk.getAbsolutePath().equals(privateFile.getAbsolutePath())) &#123;</span><br><span class="line">    copyApkToPrivatePath(pluginApk, privateFile);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="解析插件manifest-xml中的信息">解析插件manifest.xml中的信息</h3></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String dexPath = privateFile.getAbsolutePath();</span><br><span class="line">PluginManifestUtil.setManifestInfo(context, dexPath, info);</span><br></pre></td></tr></table></figure>
+<p> 处理过程比较复杂，之后再分析</p>
+<ul>
+<li><h3 id="生成自定义ClassLoader备用">生成自定义ClassLoader备用</h3></li>
+</ul>
+<p><code>PluginClassLoader</code>继承自<code>DexClassLoader</code>，以<code>FramworkClassLoader</code>作为parent ClassLoader，把生成的<code>pluginClassLoader</code>保存在<code>pluginInfo</code>中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PluginClassLoader loader = <span class="keyword">new</span> PluginClassLoader(dexPath, dexOutputPath, frameworkClassLoader, info);</span><br><span class="line">info.setClassLoader(loader);</span><br></pre></td></tr></table></figure>
+<p>自定义的<code>PluginClassLoader</code>会在之后的<code>FrameworkClassLoader</code> <code>loadClass</code>时用到。</p>
+<p><code>FrameworkClassLoader</code>的<code>loadClass</code>方法是Android PluginManager的核心方法，根据需要选择不同的classLoader来加载类文件。当需要加载插件中的类时，便委托给<code>PluginClassLoader</code>。</p>
+<p><code>PluginClassLoader</code>由于继承自<code>DexClassLoader</code> ，所以可以直接加载apk中的类文件，从而实现插件化的能力。</p>
+<ul>
+<li><h3 id="修改AssetManager加载资源的位置">修改AssetManager加载资源的位置</h3></li>
+</ul>
+<p>现在已经能加载apk中的类文件了，但是还不能直接访问apk中的资源文件。</p>
+<p>平常通过<code>Context.getString()</code>、<code>Context.getDrawable()</code>访问res中的资源文件，其实是委托给<code>Resources</code>处理的，所以要使插件能正确读取资源文件，需要从<code>Resources</code>入手。</p>
+<p>继续分析<code>Resources</code>，发现<code>Resources.getString()</code>、<code>Resources.getDrawable()</code>等又是委托给<code>AssetManager</code>的<code>getResourceValue()</code>方法读取res下的资源。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Drawable <span class="title">getDrawable</span><span class="params">(<span class="keyword">int</span> id, @Nullable Theme theme)</span> <span class="keyword">throws</span> NotFoundException </span>&#123;</span><br><span class="line">    TypedValue value;</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 通过getValue从res中读取数据</span></span><br><span class="line">    getValue(id, value, <span class="keyword">true</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 把typedValue中的数据转为Drawable</span></span><br><span class="line">    <span class="keyword">final</span> Drawable res = loadDrawable(value, id, theme);</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getValue</span><span class="params">(<span class="keyword">int</span> id, TypedValue outValue, <span class="keyword">boolean</span> resolveRefs)</span></span><br><span class="line">        <span class="keyword">throws</span> NotFoundException </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 委托给assetManager读取资源，把资源元数据保存在typedValue中</span></span><br><span class="line">    mAssets.getResourceValue(id, <span class="number">0</span>, outValue, resolveRefs);</span><br><span class="line">    </span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>并且<code>Resources</code>对象是<code>ResourcesManager.getTopLevelResources()</code>通过<code>AssertManager</code>生成的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">           </span><br><span class="line">   <span class="function"><span class="keyword">public</span> Resources <span class="title">getTopLevelResources</span><span class="params">(String resDir, String[] splitResDirs,</span><br><span class="line">           String[] overlayDirs, String[] libDirs, <span class="keyword">int</span> displayId,</span><br><span class="line">           Configuration overrideConfiguration, CompatibilityInfo compatInfo, IBinder token)</span> </span>&#123;</span><br><span class="line">           ...</span><br><span class="line">      AssetManager assets = <span class="keyword">new</span> AssetManager();</span><br><span class="line">       </span><br><span class="line">       <span class="keyword">if</span> (resDir != <span class="keyword">null</span>) &#123;</span><br><span class="line">           <span class="keyword">if</span> (assets.addAssetPath(resDir) == <span class="number">0</span>) &#123;</span><br><span class="line">               <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">       </span><br><span class="line">       ...</span><br><span class="line">       r = <span class="keyword">new</span> Resources(assets, dm, config, compatInfo, token);</span><br><span class="line">       ...</span><br><span class="line">       </span><br><span class="line">       <span class="keyword">return</span> r;</span><br><span class="line">｝</span><br></pre></td></tr></table></figure>
+<p>所以看起来只要搞定了<code>AssetManager</code>，就能顺利使插件访问到正确的资源文件了。</p>
+<p>继续分析<code>AssetManager</code>，幸运的是<code>AssetManager</code>提供了一个<code>addAssetPath()</code>方法，可以直接读取zip文件中的资源。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span><br><span class="line"> * Add an additional set of assets to the asset manager.  This can be</span><br><span class="line"> * either a directory or ZIP file.  Not for use by applications.  Returns</span><br><span class="line"> * the cookie of the added asset, or 0 on failure.</span><br><span class="line"> * &#123;<span class="doctag">@hide</span>&#125;</span><br><span class="line"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">addAssetPath</span><span class="params">(String path)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> res = addAssetPathNative(path);</span><br><span class="line">        makeStringBlocks(mStringBlocks);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以我们把插件apk的路径添加到assetpath中，之后生成的代理activity就能访问到插件中的资源文件。</p>
+<p>我们需要生成一个<code>AssetManager</code>，并把插件apk的路径添加进<code>AssetManager</code>中。</p>
+<p><code>AssetManager</code>并不能直接new出来，<code>addAssetPath()</code>方法也不能直接方法，但是都可以同反射解决。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    AssetManager am = (AssetManager) AssetManager.class.newInstance();</span><br><span class="line">    am.getClass().getMethod(<span class="string">"addAssetPath"</span>, String.class)</span><br><span class="line">            .invoke(am, dexPath);</span><br><span class="line">    info.setAssetManager(am);</span><br><span class="line">    Resources ctxres = context.getResources();</span><br><span class="line">    Resources res = <span class="keyword">new</span> Resources(am, ctxres.getDisplayMetrics(),</span><br><span class="line">            ctxres.getConfiguration());</span><br><span class="line">    info.setResources(res);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样便可以访问插件中的资源了。</p>
+<ul>
+<li><h3 id="初始化插件的application">初始化插件的application</h3></li>
+</ul>
+<p>同样是通过反射，用之前通过<br><figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="label">PluginManifestUtil.setManifestInfo</span>(context, dexPath, <span class="preprocessor">info</span>)<span class="comment">;</span></span><br></pre></td></tr></table></figure></p>
+<p>方法获取保存在<code>PlugInfo</code>里的插件Application类名，实例化插件的application。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ClassLoader loader = plugin.getClassLoader();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    Class&lt;?&gt; applicationClass = loader.loadClass(className);</span><br><span class="line">    Application application = (Application) applicationClass</span><br><span class="line">            .newInstance();</span><br><span class="line">    setApplicationBase(plugin, application);</span><br><span class="line">    <span class="comment">// invoke plugin application's onCreate()</span></span><br><span class="line">    application.onCreate();</span><br><span class="line">&#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">    Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实例化插件的Application后，并不能直接使用， 此时的Application Context还是宿主（Host）的Context，直接<code>getResources()</code>，<code>getFilesDir()</code>等获取到的还是宿主的。</p>
+<p>需要用<code>PluginContextWrapper</code>替换掉插件Application中Context。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PluginContextWrapper ctxWrapper = <span class="keyword">new</span> PluginContextWrapper(context,</span><br><span class="line">         plugin);</span><br><span class="line"> plugin.appWrapper = ctxWrapper;</span><br><span class="line"> <span class="comment">// attach</span></span><br><span class="line"> Method attachMethod = Application.class.getDeclaredMethod(</span><br><span class="line">         <span class="string">"attach"</span>, Context.class);</span><br><span class="line"> attachMethod.setAccessible(<span class="keyword">true</span>);</span><br><span class="line"> attachMethod.invoke(application, ctxWrapper);</span><br><span class="line"> <span class="keyword">if</span> (context <span class="keyword">instanceof</span> Application) &#123;</span><br><span class="line">     <span class="keyword">if</span> (android.os.Build.VERSION.SDK_INT &gt;= <span class="number">14</span>) &#123;</span><br><span class="line">         Application.class.getMethod(<span class="string">"registerComponentCallbacks"</span>,</span><br><span class="line">                 Class.forName(<span class="string">"android.content.ComponentCallbacks"</span>))</span><br><span class="line">                 .invoke(context, application);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>ContextWrapper的原理和机制参考本文后的参考文章<a href="#参考">[5]</a><a href="#参考">[6]</a><a href="#参考">[7]</a><a href="#参考">[8]</a></p>
+<ul>
+<li><h3 id="加载目录下所有插件">加载目录下所有插件</h3></li>
+</ul>
+<p>同加载单个插件的方法，只不过是遍历目录下的所有apk文件。</p>
+<h2 id="启动插件中的MainActivity">启动插件中的MainActivity</h2><p><code>startMainActivity()</code>中的事情比较简单，根据插件id或插件包名在之前缓存的Map中查找<code>PlugInfo</code>，通过<code>framwworkClassLoader</code>的<code>newActivityClassName()</code>方法缓存要启动的插件id及Activity类名，供<code>framwworkClassLoader</code>在loadClass时使用。</p>
+<p>而<code>newActivityClassName()</code>方法本身只是返回一个名为<code>androidx.pluginmgr.PluginActivity</code>的代理Activity类名。</p>
+<p>至于具体如何通过<code>androidx.pluginmgr.PluginActivity</code>加载到真正插件中的Activity，则是在<code>PluginClassLoader</code>中的<code>loadActivityClass</code>方法实现的，后面再具体分析。</p>
+<h2 id="其他方法">其他方法</h2><p>剩下一些删除插件、卸载插件的方法，以及一些方法的重载，就不赘述了。</p>
+<p>本文是在学习Android pluginManager之余将做一些笔记备忘，刚开始研究插件，对其中难免有理解不正确的地方，欢迎大家留言指正，共同学习。</p>
+<h2 id="参考">参考</h2><ol>
+<li><a href="http://www.trinea.cn/android/java-loader-common-class/" target="_blank" rel="external">Java ClassLoader基础及加载不同依赖 Jar 中的公共类</a></li>
+<li><a href="http://www.trinea.cn/android/android-plugin/" target="_blank" rel="external">Android 插件化 动态升级</a></li>
+<li><a href="http://blog.csdn.net/singwhatiwanna/article/details/39937639" target="_blank" rel="external">APK动态加载框架（DL）解析</a></li>
+<li><a href="http://codekk.com/open-source-project-analysis/detail/Android/FFish/DynamicLoadApk%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90" target="_blank" rel="external">DynamicLoadApk 源码解析</a></li>
+<li><a href="http://blog.csdn.net/canghai1129/article/details/41577901" target="_blank" rel="external">Android与设计模式——装饰者(Decorator)模式</a></li>
+<li><a href="http://blog.csdn.net/z1074971432/article/details/12561369" target="_blank" rel="external">深入理解 Context</a></li>
+<li><a href="http://blog.csdn.net/qinjuning/article/details/7310620" target="_blank" rel="external">Android中Context详解 —- 你所不知道的Context</a></li>
+<li><a href="http://blogs.360.cn/blog/proxydelegate-application/" target="_blank" rel="external">Android的Proxy/Delegate Application框架</a></li>
+</ol>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="Android_PluginManager简介">Android PluginManager简介</h2><p><strong>Android pluginManager</strong>是<a href="https://github.com/houkx/">HouKangxi</a>大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。</p>
+<p>项目地址：<a href="">https://github.com/houkx/android-pluginmgr</a></p>
+<p>相比于其他的插件化解决方案，<strong>Android pluginManager</strong>主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。</p>
+<h3 id="实现的功能点：">实现的功能点：</h3><ul>
+<li>插件为普通apk，无须依赖任何jar(摘自<a href="http://blog.csdn.net/hkxxx/article/details/42194387">作者的博客</a>)</li>
+<li>Activity生命周期由系统自己管理</li>
+<li>使用简单，只需要了解一个类PluginManager的两个方法</li>
+<li>启动Activity的效率高</li>
+<li>不修改插件，被加载的插件仍然可以独立安装。</li>
+<li>可加载任意apk中的 Activity (包括子类 ActionBarActivity 、FragmentActivity)的派生类(不包括违反限制条件的Activity)</li>
+<li>支持插件自定义Application</li>
+<li>支持插件Apk中的Activity跳转到别的Activity(插件内部的或系统的,外部已安装apk的，甚至是别的插件中的),也没有任何限制</li>
+<li>支持Activity设置主题(与系统的主题应用规则一样，如果Activity没指定Theme,但所在Application指定了Theme，则使用Application的Theme)</li>
+<li>初步支持.so</li>
+<li>支持插件使用 SharedPreference 或 SQLite数据库(尚未完善)</li>
+</ul>]]>
+    
+    </summary>
+    
+      <category term="ClassLoader" scheme="http://lwn.me/tags/ClassLoader/"/>
+    
+      <category term="反射" scheme="http://lwn.me/tags/%E5%8F%8D%E5%B0%84/"/>
+    
+      <category term="插件" scheme="http://lwn.me/tags/%E6%8F%92%E4%BB%B6/"/>
+    
+      <category term="android" scheme="http://lwn.me/categories/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[图解javascript中的变量对象、闭包、作用域链机理]]></title>
+    <link href="http://lwn.me/2014/11/02/javascript-vo-closure-scopechain/"/>
+    <id>http://lwn.me/2014/11/02/javascript-vo-closure-scopechain/</id>
+    <published>2014-11-01T16:00:00.000Z</published>
+    <updated>2015-08-05T14:24:47.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="什么是闭包">什么是闭包</h2><p><strong>javascript</strong>中的<strong>闭包</strong>是一个强大而灵活的武器，搞清<strong>闭包</strong>，<strong>作用域链</strong>的作用机理，能让我更好的将<strong>闭包</strong>运用在我们的项目中。</p>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="external">mozilla开发者中心的定义：</a></p>
+<blockquote>
+<p>Closures are functions that refer to independent (free) variables. </p>
+<p>In other words, the function defined in the closure ‘remembers’ the environment in which it was created. </p>
+</blockquote>
+<p>我理解的<strong>闭包</strong>是一个<strong>function</strong>，并且具有访问不在<strong>function</strong>内部定义的变量的能力，如嵌套<strong>function</strong>中的子<strong>function</strong>可以访问到定义在父<strong>function</strong>中的变量，是一类语言（如<strong>js</strong>）的特性。</p>
+ <a id="more"></a>
+<h2 id="闭包的应用">闭包的应用</h2><p>看一个闭包在<strong>js</strong> for循环中经典的应用：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">var</span> i = <span class="number">0</span>; i&lt;<span class="number">10</span>; i++)&#123;</span><br><span class="line">		(<span class="function"><span class="keyword">function</span>(<span class="params">j</span>)</span>&#123;</span><br><span class="line">			setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">				<span class="built_in">console</span>.log( <span class="string">"current i:"</span> + j + <span class="string">"--"</span> + <span class="keyword">new</span> <span class="built_in">Date</span>().getSeconds() + <span class="string">"s"</span> );</span><br><span class="line">			&#125;, j * <span class="number">1000</span>);</span><br><span class="line">		&#125;)(i);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">foo();</span><br></pre></td></tr></table></figure>
+<p>上面的代码改自<em>Pro JavaScript Techniques</em> 中用js控制css达到动画效果的部分。动画的高度/透明度是根据索引<code>i</code>的值动态设置的，所以我们需要将这个索引<code>i</code>保存下来。</p>
+<h2 id="闭包的错误使用">闭包的错误使用</h2><p>这里就有一个问题，为什么我们写成下面的代码就不能得到正确的索引呢？</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">	<span class="keyword">for</span>(<span class="keyword">var</span> i = <span class="number">0</span>; i&lt;<span class="number">10</span>; i++)&#123;</span><br><span class="line">		setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">				<span class="built_in">console</span>.log(<span class="string">"current i:"</span>+i+<span class="string">"--"</span>+<span class="keyword">new</span> <span class="built_in">Date</span>().getSeconds()+<span class="string">"s"</span>);     <span class="comment">//这里也用到了闭包</span></span><br><span class="line">		&#125;,i*<span class="number">1000</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">foo();</span><br></pre></td></tr></table></figure>
+<p>上面的代码得到的<code>i</code>始终是<strong>10</strong>，而不是想要的<strong>1</strong>,<strong>2</strong>,<strong>3</strong>…</p>
+<p>现在我们来逐步详细分析原因:</p>
+<ul>
+<li>1) 进入<strong>foo</strong>的<strong>execution context</strong>阶段：</li>
+</ul>
+<p>这时创建<strong>foo</strong>的<strong>Variable Object (VO)</strong>/<strong>Activation Object (AO）</strong></p>
+<pre><code>VO(foo) = {
+      i: <span class="literal">undefined</span>,
+};
+</code></pre><ul>
+<li>2) foo代码执行阶段：</li>
+</ul>
+<p>将<strong>fooExecutionContext</strong> push进<strong>Execution Context Stack</strong> 中，<code>i</code>随着循环被修改为相应的数值。</p>
+<pre><code>executionContextStack.push(fooExecutionContext);
+
+executionContextStack = [ 
+    <span class="variable">&lt;foo&gt;</span> functionContext,
+    <span class="keyword">global</span>Context
+]
+</code></pre><p>由于在<code>for</code>循环执行的时候，<code>setTimeout</code>内部的匿名函数的<strong>execution context</strong>对于<strong>foo</strong>来说是不可见的，因为这时的匿名函数并没有执行， 不能访问、修改该匿名函数内部的变量，所以匿名函数中的<code>i</code>不会被修改为<code>for</code>循环的当前索引。 但是该匿名函数的<strong>Variable Object (VO)</strong>/<strong>Activation Object (AO)</strong>已经创建，并且保存了<code>i</code>的<strong>引用</strong>。</p>
+<p><code>for</code>循环结束时<code>i</code>值为<strong>10</strong>， 正是由于匿名函数的<strong>VO</strong>/<strong>AO</strong>保存了<code>i</code>的<strong>引用</strong>，<strong>foo</strong>运行结束时，<strong>Garbage Collector</strong>不会销毁<strong>foo</strong>的<strong>VO</strong>/<strong>AO</strong>(上面保存着<code>i=10</code>),所以当<code>setTimeout</code>内的匿名函数运行时，<code>i</code>的值始终为<strong>10</strong>。</p>
+<p>搞清楚了上面的问题后，现在我们用图来解释开始的例子。</p>
+<p><img src="/img/javascript_scopechain_pic_1.png" alt="图1"></p>
+<p>上面的图是foo在执行最后一次循环时的运行机理。</p>
+<p><img src="/img/javascript_scopechain_pic_2.png" alt="图2"></p>
+<p>图2是<code>setTimeout</code>内部匿名函数执行时的机理，其中红颜色框起来部分随每个<code>setTimeout</code>内部匿名函数的不同而不同。</p>
+<p>通过上面两副图我们可以清楚的看到，增加的匿名自执行函数的作用就是将<code>for</code>循环的索引作为自己的局部变量保存起来，这样<code>setTimeout</code>里面的匿名函数就可以通过<strong>scope chain</strong>访问到正确的索引值了。</p>
+<h2 id="参考">参考</h2><p><a href="http://dmitrysoshnikov.com/ecmascript/javascript-the-core/" target="_blank" rel="external">http://dmitrysoshnikov.com/ecmascript/javascript-the-core/</a></p>
+<p><a href="http://dmitrysoshnikov.com/ecmascript/chapter-1-execution-contexts/" target="_blank" rel="external">http://dmitrysoshnikov.com/ecmascript/chapter-1-execution-contexts/</a></p>
+<p><a href="http://dmitrysoshnikov.com/ecmascript/chapter-2-variable-object/" target="_blank" rel="external">http://dmitrysoshnikov.com/ecmascript/chapter-2-variable-object/</a></p>
+<p><a href="http://dmitrysoshnikov.com/ecmascript/chapter-4-scope-chain/" target="_blank" rel="external">http://dmitrysoshnikov.com/ecmascript/chapter-4-scope-chain/</a></p>
+<p>迁移自旧博客<a href="http://lwn.iteye.com/blog/1604548" target="_blank" rel="external">懒蜗牛</a></p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="什么是闭包">什么是闭包</h2><p><strong>javascript</strong>中的<strong>闭包</strong>是一个强大而灵活的武器，搞清<strong>闭包</strong>，<strong>作用域链</strong>的作用机理，能让我更好的将<strong>闭包</strong>运用在我们的项目中。</p>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">mozilla开发者中心的定义：</a></p>
+<blockquote>
+<p>Closures are functions that refer to independent (free) variables. </p>
+<p>In other words, the function defined in the closure ‘remembers’ the environment in which it was created. </p>
+</blockquote>
+<p>我理解的<strong>闭包</strong>是一个<strong>function</strong>，并且具有访问不在<strong>function</strong>内部定义的变量的能力，如嵌套<strong>function</strong>中的子<strong>function</strong>可以访问到定义在父<strong>function</strong>中的变量，是一类语言（如<strong>js</strong>）的特性。</p>]]>
+    
+    </summary>
+    
+      <category term="closure" scheme="http://lwn.me/tags/closure/"/>
+    
+      <category term="scopechain" scheme="http://lwn.me/tags/scopechain/"/>
+    
+      <category term="vo" scheme="http://lwn.me/tags/vo/"/>
+    
+      <category term="javascript" scheme="http://lwn.me/categories/javascript/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[android不同系统版本sd的挂载方式]]></title>
+    <link href="http://lwn.me/2014/11/01/android-sdcard-mounting-method/"/>
+    <id>http://lwn.me/2014/11/01/android-sdcard-mounting-method/</id>
+    <published>2014-10-31T16:00:00.000Z</published>
+    <updated>2015-08-05T14:00:30.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="2-x系统">2.x系统</h2><p>sd卡实际挂载位置</p>
+<pre><code><span class="regexp">/mnt/</span>sdcard 
+</code></pre><p>并建立了一个/sdcard的软链接指向/mnt/sdcard</p>
+<pre><code><span class="regexp">/sdcard/</span>  --&gt; <span class="regexp">/mnt/</span>sdcard
+</code></pre><p><strong>Android 2.2之后的版本允许将应用程序安装于SD卡</strong></p>
+<p>当SD卡挂载于手机时，<code>/mnt/sdcard/.android_secure</code> 目录会被映射到<code>/mnt/asec</code> 目录和 <code>/mnt/secure</code> 目录。其中<code>/mnt/asec</code> 目录中主要是程序的安装目录，包括其执行文件和lib文件等；而<code>/mnt/secure</code> 目录中就存放程序加密后的档案。也就是说，在<code>/mnt</code>路径下看到的<code>/mnt/asec</code>目录和<code>/mnt/secure</code>目录并不是真正存在在手机内存里的，它们只是<code>/mnt/sdcard/.android_secure</code>目录的一个影像而已。也就是说<code>/mnt/sdcard/.android_secure</code> =<code>/mnt/secure</code> +<code>/mnt/asec</code></p>
+ <a id="more"></a>
+<h2 id="4-1_系统">4.1 系统</h2><ul>
+<li><p>有外置sd卡时，实际挂载位置：</p>
+<pre><code><span class="regexp">/storage/</span>sdcard0  sdcard_r 组
+</code></pre><p>  为了兼容2.x系统app，使旧的app能正确认出sd卡，将2.x时代的sd卡路径映射到<code>/storage/sdcard0</code>上</p>
+<pre><code><span class="regexp">/mnt/</span>sdcard --&gt; <span class="regexp">/storage/</span>sdcard0  system组
+
+<span class="regexp">/sdcard/</span> --&gt; <span class="regexp">/storage/</span>sdcard0  root组
+</code></pre></li>
+<li><p>无外置sd卡时，将内部存储空间划分一部分，虚拟为sd卡挂载在：</p>
+<pre><code><span class="regexp">/storage/</span>sdcard0  sdcard_rw组
+
+<span class="comment">// 兼容2.x系统app</span>
+
+<span class="regexp">/mnt/</span>sdcard --&gt;  <span class="regexp">/storage/</span>sdcard0 root组
+
+<span class="regexp">/sdcard/</span> --&gt; <span class="regexp">/storage/</span>sdcard0  root组
+</code></pre></li>
+</ul>
+<h2 id="4-4-2_系统">4.4.2 系统</h2><p>sd卡实际挂载位置</p>
+<pre><code><span class="regexp">/mnt/</span>shell<span class="regexp">/emulate/</span><span class="number">0</span>
+</code></pre><p>兼容2.x系统app，google居然将以前的sd卡挂载路径称为<a href="http://translate.google.cn/?hl=en#en/zh-CN/legacy" target="_blank" rel="external">legacy</a>，可见对历史包袱也是很头疼</p>
+<pre><code><span class="regexp">/storage/</span>emulated<span class="regexp">/legacy  --&gt; /</span>mnt<span class="regexp">/shell/</span>emulate/<span class="number">0</span>
+
+<span class="regexp">/mnt/</span>sdcard --&gt; <span class="regexp">/storage/</span>emulated/legacy
+
+<span class="regexp">/sdcard --&gt; /</span>storage<span class="regexp">/emulated/</span>legacy
+
+<span class="regexp">/storage/</span>sdcard0 --&gt; <span class="regexp">/storage/</span>emulated/legacy
+</code></pre><h2 id="参考">参考</h2><p><a href="http://stackoverflow.com/questions/23625104/storage-emulated-legacy-vs-storage-emulated-0-vs-data-data-myapp" target="_blank" rel="external">http://stackoverflow.com/questions/23625104/storage-emulated-legacy-vs-storage-emulated-0-vs-data-data-myapp</a><br><a href="http://www.miui.com/thread-863099-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-863099-1-1.html</a></p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="2-x系统">2.x系统</h2><p>sd卡实际挂载位置</p>
+<pre><code><span class="regexp">/mnt/</span>sdcard 
+</code></pre><p>并建立了一个/sdcard的软链接指向/mnt/sdcard</p>
+<pre><code><span class="regexp">/sdcard/</span>  --&gt; <span class="regexp">/mnt/</span>sdcard
+</code></pre><p><strong>Android 2.2之后的版本允许将应用程序安装于SD卡</strong></p>
+<p>当SD卡挂载于手机时，<code>/mnt/sdcard/.android_secure</code> 目录会被映射到<code>/mnt/asec</code> 目录和 <code>/mnt/secure</code> 目录。其中<code>/mnt/asec</code> 目录中主要是程序的安装目录，包括其执行文件和lib文件等；而<code>/mnt/secure</code> 目录中就存放程序加密后的档案。也就是说，在<code>/mnt</code>路径下看到的<code>/mnt/asec</code>目录和<code>/mnt/secure</code>目录并不是真正存在在手机内存里的，它们只是<code>/mnt/sdcard/.android_secure</code>目录的一个影像而已。也就是说<code>/mnt/sdcard/.android_secure</code> =<code>/mnt/secure</code> +<code>/mnt/asec</code></p>]]>
+    
+    </summary>
+    
+      <category term="android" scheme="http://lwn.me/tags/android/"/>
+    
+      <category term="sdcard" scheme="http://lwn.me/tags/sdcard/"/>
+    
+      <category term="android" scheme="http://lwn.me/categories/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[对javascript中的Variable Object的理解]]></title>
+    <link href="http://lwn.me/2014/11/01/javascript-variable-object/"/>
+    <id>http://lwn.me/2014/11/01/javascript-variable-object/</id>
+    <published>2014-10-31T16:00:00.000Z</published>
+    <updated>2015-08-05T13:59:58.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="Variable_Object">Variable Object</h2><p>在<strong>ECMAScipt</strong>中，通过变量对象<strong>Variable Object (VO)</strong>机制来存贮、访问变量variables。<strong>VO</strong>中包含了：</p>
+<h3 id="1-_variables_(通过var_声明的变量)">1.  variables (通过var 声明的变量)</h3><h3 id="2-_function_declaration_(函数声明)">2.  function declaration (函数声明)</h3><h3 id="3-_function_formal_parameters_(函数行参)">3.  function formal parameters (函数行参)</h3><p><strong>注</strong>： 不包括function expression (函数表达式)。</p>
+ <a id="more"></a>
+<p><strong>Variable Object</strong>在<strong>Global Context</strong>中等同于<strong>Global Object</strong>，在<strong>Function Context</strong>中称为<strong>Activation Object (AO)</strong>，<br>一般来讲，<strong>Variable Object</strong> / <strong>Activation Object</strong> 我们不能直接在外部访问到。</p>
+<p>要访问某个变量<strong>x</strong>，首先在<strong>x</strong>所在<strong>Function Context</strong>中的<strong>Variable Object</strong>中查找，<br>若找不到，则在<strong>x</strong>所属<strong>function</strong>的<strong>[[scope]]</strong>属性中保存的<strong>scope chain</strong>中，<br>逐级向上查找，直至查找到<strong>Global Object</strong>，如果仍未找到则返回 <strong>x</strong> is not defined 。</p>
+<p>我们所常见的<code>window</code>对象实际上是<strong>Global Object</strong>的引用，所以通过<code>var</code>在<strong>Global Context</strong>中声明的变量<strong>x</strong>，<br>可以通过<strong>x</strong>直接访问，也可通过<code>window.x</code>来间接访问，并且<a href="http://www.cnblogs.com/TomXu/archive/2012/01/16/2309728.html#2296024" target="_blank" rel="external">通过<code>window.x</code>访问比直接访问要慢</a> 。</p>
+<pre><code><span class="keyword">var</span> a = <span class="string">"variable"</span>;
+b = <span class="string">"property"</span>;
+
+<span class="built_in">console</span>.log(<span class="built_in">window</span>.a);  <span class="comment">// "variable"</span>
+<span class="built_in">console</span>.log(<span class="built_in">window</span>.b); <span class="comment">// "property"</span>
+
+<span class="keyword">delete</span> <span class="built_in">window</span>.a;  <span class="comment">// false</span>
+<span class="built_in">console</span>.log(<span class="built_in">window</span>.a); <span class="comment">// "variable"</span>
+
+<span class="keyword">delete</span> <span class="built_in">window</span>.b; <span class="comment">//true</span>
+<span class="built_in">console</span>.log(<span class="built_in">window</span>.b);  <span class="comment">//undefined;</span>
+</code></pre><p>在上面的例子中， 虽然都能通过<code>window.a</code>, <code>window.b</code>的形式来访问，看似都是<code>window</code>的属性，但是实质是不同的。</p>
+<p>不使用<code>var</code>声明的”变量“，实际不是真正的变量，而是<strong>Global Object</strong>的属性，可以通过<strong>delete</strong> 关键字删除，而真正的变量拥有<code>DontDelete</code>属性，不能通过<code>delete</code>删除。</p>
+<p>但值得注意的是，在firebug中，执行</p>
+<pre><code><span class="keyword">delete</span> <span class="built_in">window</span>.a;  <span class="regexp">//</span><span class="literal">true</span>
+<span class="keyword">delete</span> <span class="built_in">window</span>.b;  <span class="regexp">//</span><span class="literal">true</span>
+</code></pre><p>返回值都是<strong>true</strong>，这是由于在eval context中，变量不会被添加<code>DontDelete</code>属性，firebug正是利用eval来执行我们在console中的代码，而在chrome，opera的console中则返回正确的<strong>false</strong>,<strong>true</strong></p>
+<h2 id="参考">参考</h2><p><a href="http://dmitrysoshnikov.com/ecmascript/chapter-2-variable-object/" target="_blank" rel="external">http://dmitrysoshnikov.com/ecmascript/chapter-2-variable-object</a></p>
+<p>迁移自旧博客<a href="http://lwn.iteye.com/blog/1602643" target="_blank" rel="external">懒蜗牛</a></p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="Variable_Object">Variable Object</h2><p>在<strong>ECMAScipt</strong>中，通过变量对象<strong>Variable Object (VO)</strong>机制来存贮、访问变量variables。<strong>VO</strong>中包含了：</p>
+<h3 id="1-_variables_(通过var_声明的变量)">1.  variables (通过var 声明的变量)</h3><h3 id="2-_function_declaration_(函数声明)">2.  function declaration (函数声明)</h3><h3 id="3-_function_formal_parameters_(函数行参)">3.  function formal parameters (函数行参)</h3><p><strong>注</strong>： 不包括function expression (函数表达式)。</p>]]>
+    
+    </summary>
+    
+      <category term="javascript" scheme="http://lwn.me/tags/javascript/"/>
+    
+      <category term="scope chain" scheme="http://lwn.me/tags/scope-chain/"/>
+    
+      <category term="vo" scheme="http://lwn.me/tags/vo/"/>
+    
+      <category term="javascript" scheme="http://lwn.me/categories/javascript/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[Drawable小研究]]></title>
+    <link href="http://lwn.me/2014/04/13/drawable/"/>
+    <id>http://lwn.me/2014/04/13/drawable/</id>
+    <published>2014-04-12T16:00:00.000Z</published>
+    <updated>2015-08-05T13:58:19.000Z</updated>
+    <content type="html"><![CDATA[<p>Drawable，官方给出的解释是“<em>something that can be drawn</em>”，翻译过来就是可以被画的东西。</p>
+<p>官方把“可以被画的东西”分为了7种形式:</p>
+<ul>
+<li><p><a href="../../11/bitmap">Bitmap</a> 最简单的“可以被画的东西”，可能是png，或jpg</p>
+</li>
+<li><p><strong>Nine Patch</strong> 俗称“.9”图，android自己扩展的一种png格式，可以自定义图像拉伸的信息</p>
+</li>
+<li><p><strong>Shape</strong> 用简单的绘图指令生成图片。如画矩形、圆形</p>
+</li>
+<li><p><strong>Layers</strong> 多个Drawable，按照层叠顺序组成的Drawable</p>
+</li>
+<li><p><strong>States</strong> Drawable的状态，如“focused”, “pressed”等</p>
+</li>
+<li><p><strong>Levels</strong> 可以更改level的Drawable，如进度条，电池进度</p>
+</li>
+<li><p><strong>Scale</strong> 可缩放的Drawable</p>
+<a id="more"></a>
+</li>
+</ul>
+<p>Drawable是所有XDrawable的父类，子类有AnimationDrawable、BitmapDrawable、ClipDrawable、<br>GradientDrawable、InsetDrawable、LayerDrawable、LevelListDrawable、NinePathDrawable、<br>PaintDrawable、PictureDrawble、RotateDrawable、ScaleDrawable、ShapeDrawable、StateListDrawable、<br>TransitionDrawable。</p>
+<p><strong>所以，Drawable是对一类“可以被画”的事物的抽象，Bitmap是7种形式Drawable的其中一种，BitmapDrawable是对Bitmap封装的具体Drawable。</strong></p>
+<p>Drawable定义了抽象方法<code>draw(Canvas)</code>，各子类根据自己具体特征，实现不同的draw方法。</p>
+<p>Drawable可以通过静态方法<code>creatFromResourceStream</code>创建Bitmap，之后包装为BitmapDrawable，</p>
+<p>也可以通过<code>createFromXmlInner</code>工厂方法，根据xml文件内容创建具体的Drawable子类。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>Drawable，官方给出的解释是“<em>something that can be drawn</em>”，翻译过来就是可以被画的东西。</p>
+<p>官方把“可以被画的东西”分为了7种形式:</p>
+<ul>
+<li><p><a href="../../11/bitmap">Bitmap</a> 最简单的“可以被画的东西”，可能是png，或jpg</p>
+</li>
+<li><p><strong>Nine Patch</strong> 俗称“.9”图，android自己扩展的一种png格式，可以自定义图像拉伸的信息</p>
+</li>
+<li><p><strong>Shape</strong> 用简单的绘图指令生成图片。如画矩形、圆形</p>
+</li>
+<li><p><strong>Layers</strong> 多个Drawable，按照层叠顺序组成的Drawable</p>
+</li>
+<li><p><strong>States</strong> Drawable的状态，如“focused”, “pressed”等</p>
+</li>
+<li><p><strong>Levels</strong> 可以更改level的Drawable，如进度条，电池进度</p>
+</li>
+<li><p><strong>Scale</strong> 可缩放的Drawable</p>]]>
+    
+    </summary>
+    
+      <category term="bitmap" scheme="http://lwn.me/tags/bitmap/"/>
+    
+      <category term="drawable" scheme="http://lwn.me/tags/drawable/"/>
+    
+      <category term="android" scheme="http://lwn.me/categories/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[canvas、bitmap、paint之间是什么关系]]></title>
+    <link href="http://lwn.me/2014/04/13/canvas/"/>
+    <id>http://lwn.me/2014/04/13/canvas/</id>
+    <published>2014-04-12T16:00:00.000Z</published>
+    <updated>2015-08-05T14:01:10.000Z</updated>
+    <content type="html"><![CDATA[<p><a href="http://developer.android.com/reference/android/graphics/Canvas.html" target="_blank" rel="external">官方文档</a>翻译过来的解释：</p>
+<p>要绘图，需要4个基本组件:</p>
+<ul>
+<li>Bitmap 保存像素的容器</li>
+<li>Canvas 执行绘图命令的宿主</li>
+<li>Rect/Path/text/Bitmap 要绘制的元素</li>
+<li>Paint 用什么样的方式绘制</li>
+</ul>
+<p>android的<strong>canvas</strong>绘图，基于<strong>skia</strong>，想要了解<strong>canvas</strong>的绘图过程，需要对<strong>canvas</strong>和<strong>skia</strong>的源码有所了解。</p>
+<p>查看Canvas源码，发现Canvas与Bitmap类似，都是对其native方法进行了封装。</p>
+ <a id="more"></a>
+<p>真正起绘图作用的是<code>mNativeCanvas</code>，保存有<strong>nativeCanvas(SkCanvas)</strong>的指针。</p>
+<p><code>mNativeCanvas</code>注释上指明</p>
+<blockquote>
+<p> assigned in constructors or setBitmap, freed in finalizer</p>
+</blockquote>
+<p>说明<code>mNativeCanvas(SkCanvas)</code>是在构造函数、或者<code>setBitmap</code>时分配的。</p>
+<p>继续查看源码，发现<code>mNativeCanvas</code>是调用<strong>native</strong>方法</p>
+<pre><code><span class="function"><span class="title">initRaster</span><span class="params">(int nativeBitmapOrZero)</span></span>
+</code></pre><p>方法生成。</p>
+<p><code>initRaster</code>中的参数就是Canvas私有属性<code>mBitmap</code>的<strong>nativeBitmap(SkBitmap)</strong>的指针。</p>
+<p>查看<em>frameworks/base/core/jni/android/graphics/</em>下的Canvas.cpp文件，</p>
+<pre><code><span class="function"><span class="keyword">static</span> SkCanvas* <span class="title">initRaster</span><span class="params">(JNIEnv* env, jobject, SkBitmap* bitmap)</span> </span>{
+        <span class="keyword">return</span> bitmap ? <span class="keyword">new</span> SkCanvas(*bitmap) : <span class="keyword">new</span> SkCanvas;
+}
+</code></pre><p>发现如果指定了<strong>SkBitmap</strong>，<code>initRaster</code>会以指定的<strong>SkBitmap</strong>生成<strong>SkCanvas</strong>；</p>
+<p>反之会生成默认的<strong>SkCanvas</strong>。</p>
+<p>继续查看<em>android/external/skia/src/core/</em>下SkCanvas的源码，</p>
+<p>默认构造函数</p>
+<pre><code><span class="rule"><span class="attribute">SkCanvas</span>:<span class="value">:<span class="function">SkCanvas</span>()
+: <span class="function">fMCStack</span>(<span class="function">sizeof</span>(MCRec), fMCRecStorage, <span class="function">sizeof</span>(fMCRecStorage)) {
+    <span class="function">inc_canvas</span>()</span></span>;
+
+    <span class="tag">this-</span>&gt;<span class="tag">init</span>(<span class="tag">NULL</span>);
+}
+</code></pre><p><code>init</code>方法调用<code>setDevice</code>方法，生成默认的<strong>SkDevice</strong>，而<strong>SkDeveice</strong>最终会生成默认的<strong>SkBitmap</strong></p>
+<h3 id="总结">总结</h3><ul>
+<li><p>Canvas的属性<code>mNativeCanvas(SkCanvas)</code>是根据<code>mBitmap</code>生成的，如果<code>mBitmap</code>不为空，</p>
+<p>则<code>mNativeCanvas</code>操作/修改的<strong>SkBitmap</strong>就是<code>mBitmap</code>；</p>
+<p>否则会操作/修改<code>mNativeCanvas</code>自己的<strong>SkBitmap</strong>.</p>
+</li>
+<li><p>Canvas最终操作/修改的内存还是<strong>Bitmap(SkBitmap)</strong>中的数据.</p>
+</li>
+<li><p><code>Canvas(bitmap)</code> 与 <code>canvas.setBitmap(bitmap)</code>中的<strong>bitmap</strong>是Canvas的<code>mBitmap</code>，直接操作/修改的对象。</p>
+<p><code>canvas.drawBitmap(bitmap)</code>中的<strong>bitmap</strong>是源<strong>bitmap</strong>，draw时，不对源<strong>bitmap</strong>进行写操作，</p>
+<p>而是写入到<code>mBitmap</code>或<code>mNativeCanvas</code>自己的<strong>SkBitmap</strong>中。</p>
+</li>
+<li><p>源码中指明Canvas最大绘图大小为<strong>32766 * 32766</strong>。超过这个大小会直接报错。</p>
+</li>
+</ul>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p><a href="http://developer.android.com/reference/android/graphics/Canvas.html">官方文档</a>翻译过来的解释：</p>
+<p>要绘图，需要4个基本组件:</p>
+<ul>
+<li>Bitmap 保存像素的容器</li>
+<li>Canvas 执行绘图命令的宿主</li>
+<li>Rect/Path/text/Bitmap 要绘制的元素</li>
+<li>Paint 用什么样的方式绘制</li>
+</ul>
+<p>android的<strong>canvas</strong>绘图，基于<strong>skia</strong>，想要了解<strong>canvas</strong>的绘图过程，需要对<strong>canvas</strong>和<strong>skia</strong>的源码有所了解。</p>
+<p>查看Canvas源码，发现Canvas与Bitmap类似，都是对其native方法进行了封装。</p>]]>
+    
+    </summary>
+    
+      <category term="bitmap" scheme="http://lwn.me/tags/bitmap/"/>
+    
+      <category term="canvas" scheme="http://lwn.me/tags/canvas/"/>
+    
+      <category term="paint" scheme="http://lwn.me/tags/paint/"/>
+    
+      <category term="android" scheme="http://lwn.me/categories/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[Android Bitmap的一点研究]]></title>
+    <link href="http://lwn.me/2014/04/11/bitmap/"/>
+    <id>http://lwn.me/2014/04/11/bitmap/</id>
+    <published>2014-04-10T16:00:00.000Z</published>
+    <updated>2015-08-06T01:04:42.000Z</updated>
+    <content type="html"><![CDATA[<p>android中的<strong>Bitmap</strong>与其他对象不同，不能通过<code>new Bitmap()</code>直接实例化.</p>
+<p>查看源码，<strong>Bitmap</strong>的构造函数是<em>default</em>的，仅包内可见，实际是供<strong>native</strong>方法调用的。</p>
+<p><strong>Bitmap</strong>中实际保存数据的地方在<strong>native</strong>层，<strong>java</strong>层仅对<strong>native</strong>层方法进行封装、重载，</p>
+<p>并提供一些状态的判断方法、属性的<code>set</code>、<code>get</code>方法。</p>
+<p><strong>Bitmap</strong>有<code>mNativaBitmap</code>属性，用来保存<code>nativeBitmap</code>的地址。</p>
+<p><code>mNativeBitmap</code>的地址在构造<strong>Bitmap</strong>时，由<strong>native</strong>方法直接传递进来。</p>
+<p>####所以整个<strong>Bitmap</strong>可以认为在<strong>java</strong>层基本不怎么占内存，大部分内存占用都是在<strong>native</strong>层。</p>
+ <a id="more"></a>
+<h3 id="Bitmap自身提供了三类创建Bitmap的静态方法："><strong>Bitmap</strong>自身提供了三类创建<strong>Bitmap</strong>的静态方法：</h3><h4 id="1-_根据传入的colors数组，生成bitmap，colors数组就是每个像素点的颜色值ARGB">1. 根据传入的<code>colors</code>数组，生成<code>bitmap</code>，<code>colors</code>数组就是每个像素点的颜色值ARGB</h4><pre><code>createBitmap(<span class="built_in">int</span> colors[], <span class="built_in">int</span> offset, <span class="built_in">int</span> stride, <span class="built_in">int</span> <span class="variable">width</span>, <span class="built_in">int</span> <span class="variable">height</span>, Config config);
+</code></pre><p>最终调用<strong>native</strong>方法</p>
+<pre><code>nativeCreate(<span class="built_in">int</span>[] colors, <span class="built_in">int</span> offset, <span class="built_in">int</span> stride, <span class="built_in">int</span> <span class="variable">width</span>. <span class="built_in">int</span> <span class="variable">height</span>, <span class="built_in">int</span> config.nativeInt, <span class="built_in">boolean</span> <span class="keyword">false</span>)
+</code></pre><p>生成新的<strong>Bitmap</strong></p>
+<h4 id="2-_生成指定大小的空白Bitmap">2.  生成指定大小的空白<strong>Bitmap</strong></h4><pre><code>createBitmap(<span class="built_in">int</span> <span class="variable">width</span>, <span class="built_in">int</span> <span class="variable">height</span>, Config config)
+</code></pre><p>同样最终会调用</p>
+<pre><code>nativeCreate(<span class="built_in">int</span>[] colors, <span class="built_in">int</span> offset, <span class="built_in">int</span> stride, <span class="built_in">int</span> <span class="variable">width</span>. <span class="built_in">int</span> <span class="variable">height</span>, <span class="built_in">int</span> config.nativeInt, <span class="built_in">boolean</span> <span class="keyword">false</span>)
+</code></pre><p>不过其中<code>color</code>数组为<code>null</code></p>
+<h4 id="3-_从源Bitmap中截取一部分，生成新的Bitmap，不对源bitmap修改">3.  从源Bitmap中截取一部分，生成新的Bitmap，不对源bitmap修改</h4><p>具体实现分两部分：</p>
+<p>调用方法<strong>（2）</strong>生成新的空白bitmap</p>
+<p>new 一个Canvas，将新生成的bitmap set到canvas里，通过canvas对bitmap进行裁剪等处理，然后返回bitmap</p>
+<pre><code>Canvas <span class="keyword">canvas</span> = new Canvas();
+<span class="keyword">canvas</span>.setBitmap(bitmap);
+<span class="keyword">canvas</span>.drawBitmap(sourceBitmap, srcRect, dstRectF, paint);
+<span class="keyword">canvas</span>.setBitmap(null);  <span class="comment">//将临时的canvas中的mBitmap置空，防止canvas拥有bitmap引用，无法被GC回收</span>
+</code></pre>]]></content>
+    <summary type="html">
+    <![CDATA[<p>android中的<strong>Bitmap</strong>与其他对象不同，不能通过<code>new Bitmap()</code>直接实例化.</p>
+<p>查看源码，<strong>Bitmap</strong>的构造函数是<em>default</em>的，仅包内可见，实际是供<strong>native</strong>方法调用的。</p>
+<p><strong>Bitmap</strong>中实际保存数据的地方在<strong>native</strong>层，<strong>java</strong>层仅对<strong>native</strong>层方法进行封装、重载，</p>
+<p>并提供一些状态的判断方法、属性的<code>set</code>、<code>get</code>方法。</p>
+<p><strong>Bitmap</strong>有<code>mNativaBitmap</code>属性，用来保存<code>nativeBitmap</code>的地址。</p>
+<p><code>mNativeBitmap</code>的地址在构造<strong>Bitmap</strong>时，由<strong>native</strong>方法直接传递进来。</p>
+<p>####所以整个<strong>Bitmap</strong>可以认为在<strong>java</strong>层基本不怎么占内存，大部分内存占用都是在<strong>native</strong>层。</p>]]>
+    
+    </summary>
+    
+      <category term="bitmap" scheme="http://lwn.me/tags/bitmap/"/>
+    
+      <category term="canvas" scheme="http://lwn.me/tags/canvas/"/>
+    
+      <category term="android" scheme="http://lwn.me/categories/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[如何在android上抓包]]></title>
+    <link href="http://lwn.me/2014/03/21/how-to-view-network-requests-on-android/"/>
+    <id>http://lwn.me/2014/03/21/how-to-view-network-requests-on-android/</id>
+    <published>2014-03-20T16:00:00.000Z</published>
+    <updated>2015-08-05T14:23:25.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="用Charles">用Charles</h2><p><strong>android4.0以上的系统，wifi环境下支持设置网络代理。</strong></p>
+<ul>
+<li><p>安装<a href="http://www.charlesproxy.com/" target="_blank" rel="external">Charles</a></p>
+</li>
+<li><p>打开Charles，在<code>proxy</code>–&gt;<code>proxy settings</code>–&gt;<code>proxies</code>中设置要监听的端口号，一般为<strong>8080</strong></p>
+</li>
+<li><p>查看本机ip，</p>
+<pre><code><span class="variable">$ </span>ifconfig
+</code></pre></li>
+<li><p>记住本机的ip地址，如<strong>222.11.22.11</strong></p>
+</li>
+<li>将android手机连上wifi，确保与电脑处于<strong>同一</strong>ip段。</li>
+<li><p>一般在wifi连接的<strong>高级设置</strong>里可以找到<strong>代理设置</strong>，将代理设置改为<strong>手动</strong>，<br>填入刚才记下的ip地址，以及Charles里设置的端口号<strong>8080</strong>，保存后退出。<br>现在手机的网络请求都会被转发到Charles上。</p>
+<a id="more"></a>
+<p>  <img src="/img/charles.png" alt="charles"></p>
+<p>这种方法只适合于抓去android4.0以上系统，wifi环境的网络请求。</p>
+<p>对于android2.x的系统，系统没有提供设置代理的方法。</p>
+<p>或者，我们需要查看 <em>2g</em> / <em>3g</em> / <em>4g</em> 的网络请求，用Chalers就无能为力了。</p>
+</li>
+</ul>
+<hr>
+<h2 id="用tcpdump结合wireshark">用tcpdump结合wireshark</h2><p><strong>前提是手机要root过</strong></p>
+<p> <a href="http://www.tcpdump.org" target="_blank" rel="external">tcpdump</a>是一个开源跨平台的网络数据采集分析工具。</p>
+<p> 详细用法参见<a href="http://www.cnblogs.com/ggjucheng/archive/2012/01/14/2322659.html" target="_blank" rel="external">ggjucheng</a>的博客。</p>
+<ul>
+<li><p>首先下载<a href="http://www.strazzere.com/android/tcpdump" target="_blank" rel="external">tcpdump</a></p>
+</li>
+<li><p>将<strong>tcpdump</strong> push到手机sd卡上</p>
+<pre><code>$ adb <span class="keyword">push</span> .<span class="regexp">/tcpdump /</span>sdcard<span class="regexp">/tcpdump</span>
+</code></pre></li>
+<li><p>用<strong>rootExplorer</strong>将<strong>tcpdump</strong>复制到<em>/system/xbin</em>目录下</p>
+</li>
+<li><p>获取root权限</p>
+<pre><code><span class="variable">$ </span>adb shell
+<span class="variable">$ </span>su
+</code></pre></li>
+<li><p>给<strong>tcpdump</strong>加上权限</p>
+<pre><code>$ <span class="keyword">chmod</span> <span class="number">777</span> /<span class="keyword">system</span>/xbin/tcpdump
+</code></pre></li>
+<li><p>然后就是执行<strong>tcpdump</strong>开始抓包了</p>
+<pre><code>$ tcpdump -<span class="tag">p</span> -vv -s <span class="number">0</span> -w /sdcard/cap.pcap
+</code></pre></li>
+<li><p>等收集到足够的数据包后<strong>ctrl + c</strong>停止抓包</p>
+</li>
+<li><p>把收集到的数据pull到本地</p>
+<pre><code>$ adb pull /sdcard/cap<span class="class">.pcap</span> ./
+</code></pre></li>
+<li><p>用<strong>wireshark</strong>打开<strong>pcap</strong>文件</p>
+<p>  <img src="/img/wireshark.png" alt="wireshark"></p>
+</li>
+</ul>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h2 id="用Charles">用Charles</h2><p><strong>android4.0以上的系统，wifi环境下支持设置网络代理。</strong></p>
+<ul>
+<li><p>安装<a href="http://www.charlesproxy.com/">Charles</a></p>
+</li>
+<li><p>打开Charles，在<code>proxy</code>–&gt;<code>proxy settings</code>–&gt;<code>proxies</code>中设置要监听的端口号，一般为<strong>8080</strong></p>
+</li>
+<li><p>查看本机ip，</p>
+<pre><code><span class="variable">$ </span>ifconfig
+</code></pre></li>
+<li><p>记住本机的ip地址，如<strong>222.11.22.11</strong></p>
+</li>
+<li>将android手机连上wifi，确保与电脑处于<strong>同一</strong>ip段。</li>
+<li><p>一般在wifi连接的<strong>高级设置</strong>里可以找到<strong>代理设置</strong>，将代理设置改为<strong>手动</strong>，<br>填入刚才记下的ip地址，以及Charles里设置的端口号<strong>8080</strong>，保存后退出。<br>现在手机的网络请求都会被转发到Charles上。</p>]]>
+    
+    </summary>
+    
+      <category term="tcpdump" scheme="http://lwn.me/tags/tcpdump/"/>
+    
+      <category term="抓包" scheme="http://lwn.me/tags/%E6%8A%93%E5%8C%85/"/>
+    
+      <category term="android" scheme="http://lwn.me/categories/android/"/>
+    
+  </entry>
+  
+</feed>

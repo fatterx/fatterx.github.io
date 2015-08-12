@@ -1,0 +1,793 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Android PluginManager 源码解析2--FrameworkClassLoader | Fatter&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Fatter">
+    
+
+    
+    <meta name="description" content="学习Android PluginManager加载插件的机制，需要先了解系统是如何加载Activity的。
+Android 启动Activity的机制Android系统的Activity是通过 AndroidThread.performLaunchActivity()方法生成并启动的。
+12345678910111213141516171819Activity activity = null;tr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android PluginManager 源码解析2--FrameworkClassLoader">
+<meta property="og:url" content="http://lwn.me/2015/08/10/android-pluginmanager-source-code-analysis-2/index.html">
+<meta property="og:site_name" content="Fatter's Blog">
+<meta property="og:description" content="学习Android PluginManager加载插件的机制，需要先了解系统是如何加载Activity的。
+Android 启动Activity的机制Android系统的Activity是通过 AndroidThread.performLaunchActivity()方法生成并启动的。
+12345678910111213141516171819Activity activity = null;tr">
+<meta property="og:image" content="http://lwn.me/img/frameworkclassloader.png">
+<meta property="og:image" content="http://lwn.me/img/am_frameworkclassloader_class_diagram.png">
+<meta property="og:updated_time" content="2015-08-12T10:09:18.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android PluginManager 源码解析2--FrameworkClassLoader">
+<meta name="twitter:description" content="学习Android PluginManager加载插件的机制，需要先了解系统是如何加载Activity的。
+Android 启动Activity的机制Android系统的Activity是通过 AndroidThread.performLaunchActivity()方法生成并启动的。
+12345678910111213141516171819Activity activity = null;tr">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Fatter&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Fatter&#39;s Blog" title="Fatter&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Fatter&#39;s Blog">Fatter&#39;s Blog</a></h1>
+				<h2 class="blog-motto">让我们忠于理想，让我们面对现实</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/lab">实验室</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+						<li><a href='javascript:(function() {  
+    function c() {  
+        var e = document.createElement("link");  
+        e.setAttribute("type", "text/css");  
+        e.setAttribute("rel", "stylesheet");  
+        e.setAttribute("href", f);  
+        e.setAttribute("class", l);  
+        document.body.appendChild(e)  
+    }  
+   
+    function h() {  
+        var e = document.getElementsByClassName(l);  
+        for (var t = 0; t < e.length; t++) {  
+            document.body.removeChild(e[t])  
+        }  
+    }  
+   
+    function p() {  
+        var e = document.createElement("div");  
+        e.setAttribute("class", a);  
+        document.body.appendChild(e);  
+        setTimeout(function() {  
+            document.body.removeChild(e)  
+        }, 100)  
+    }  
+   
+    function d(e) {  
+        return {  
+            height : e.offsetHeight,  
+            width : e.offsetWidth  
+        }  
+    }  
+   
+    function v(i) {  
+        var s = d(i);  
+        return s.height > e && s.height < n && s.width > t && s.width < r  
+    }  
+   
+    function m(e) {  
+        var t = e;  
+        var n = 0;  
+        while (!!t) {  
+            n += t.offsetTop;  
+            t = t.offsetParent  
+        }  
+        return n  
+    }  
+   
+    function g() {  
+        var e = document.documentElement;  
+        if (!!window.innerWidth) {  
+            return window.innerHeight  
+        } else if (e && !isNaN(e.clientHeight)) {  
+            return e.clientHeight  
+        }  
+        return 0  
+    }  
+   
+    function y() {  
+        if (window.pageYOffset) {  
+            return window.pageYOffset  
+        }  
+        return Math.max(document.documentElement.scrollTop, document.body.scrollTop)  
+    }  
+   
+    function E(e) {  
+        var t = m(e);  
+        return t >= w && t <= b + w  
+    }  
+   
+    function S() {  
+        var e = document.createElement("audio");  
+        e.setAttribute("class", l);  
+        e.src = i;  
+        e.loop = false;  
+        e.addEventListener("canplay", function() {  
+            setTimeout(function() {  
+                x(k)  
+            }, 500);  
+            setTimeout(function() {  
+                N();  
+                p();  
+                for (var e = 0; e < O.length; e++) {  
+                    T(O[e])  
+                }  
+            }, 14000)  
+        }, true);  
+        e.addEventListener("ended", function() {  
+            N();  
+            h()  
+        }, true);  
+        e.innerHTML = " <p>If you are reading this, it is because your browser does not support the audio element. We recommend that you get a new browser.</p> <p>";  
+        document.body.appendChild(e);  
+        e.play()  
+    }  
+   
+    function x(e) {  
+        e.className += " " + s + " " + o  
+    }  
+   
+    function T(e) {  
+        e.className += " " + s + " " + u[Math.floor(Math.random() * u.length)]  
+    }  
+   
+    function N() {  
+        var e = document.getElementsByClassName(s);  
+        var t = new RegExp("\\b" + s + "\\b");  
+        for (var n = 0; n < e.length; ) {  
+            e[n].className = e[n].className.replace(t, "")  
+        }  
+    }  
+   
+    var e = 30;  
+    var t = 30;  
+    var n = 350;  
+    var r = 350;  
+    var i = "/mp3/zouqilai.mp3"; 
+    var s = "mw-harlem_shake_me";  
+    var o = "im_first";  
+    var u = ["im_drunk", "im_baked", "im_trippin", "im_blown"];  
+    var a = "mw-strobe_light";  
+    var f = "/css/harlem-shake-style.css";  
+    var l = "mw_added_css";  
+    var b = g();  
+    var w = y();  
+    var C = document.getElementsByTagName("*");  
+    var k = null;  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            if (E(A)) {  
+                k = A;  
+                break  
+            }  
+        }  
+    }  
+    if (A === null) {  
+        console.warn("Could not find a node of the right size. Please try a different page.");  
+        return  
+    }  
+    c();  
+    S();  
+    var O = [];  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            O.push(A)  
+        }  
+    }  
+})()    '>奏起来</a></li>
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:lwn.me">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/10/android-pluginmanager-source-code-analysis-2/" title="Android PluginManager 源码解析2--FrameworkClassLoader" itemprop="url">Android PluginManager 源码解析2--FrameworkClassLoader</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-10T13:12:55.000Z" itemprop="datePublished"> 发表于 2015-08-10</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Android_启动Activity的机制"><span class="toc-number">1.</span> <span class="toc-text">Android 启动Activity的机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FrameworkClassLoader"><span class="toc-number">2.</span> <span class="toc-text">FrameworkClassLoader</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PluginClassLoader"><span class="toc-number">3.</span> <span class="toc-text">PluginClassLoader</span></a></li></ol>
+		
+		</div>
+		
+		<p>学习<strong>Android PluginManager</strong>加载插件的机制，需要先了解系统是如何加载Activity的。</p>
+<h2 id="Android_启动Activity的机制">Android 启动Activity的机制</h2><p>Android系统的Activity是通过 <code>AndroidThread</code>.<code>performLaunchActivity()</code>方法生成并启动的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Activity activity = <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    java.lang.ClassLoader cl = r.packageInfo.getClassLoader();</span><br><span class="line">    activity = mInstrumentation.newActivity(</span><br><span class="line">            cl, component.getClassName(), r.intent);</span><br><span class="line">    StrictMode.incrementExpectedActivityCount(activity.getClass());</span><br><span class="line">    r.intent.setExtrasClassLoader(cl);</span><br><span class="line">    r.intent.prepareToEnterProcess();</span><br><span class="line">    <span class="keyword">if</span> (r.state != <span class="keyword">null</span>) &#123;</span><br><span class="line">        r.state.setClassLoader(cl);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!mInstrumentation.onException(activity, e)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</span><br><span class="line">            <span class="string">"Unable to instantiate activity "</span> + component</span><br><span class="line">            + <span class="string">": "</span> + e.toString(), e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>r.packageInfo</code>是一个<code>LoadedApk</code>对象，保存了加载dex中class文件的ClassLoader，默认是系统的<code>PathClassLoader</code>。</p>
+<p>通过<code>AndroidThread</code>源码，看出<code>AndroidThread</code>通过委托给<code>Instrumentation</code>的<code>newActivity()</code>方法生成Activity。</p>
+<a id="more"></a>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Activity <span class="title">newActivity</span><span class="params">(ClassLoader cl, String className,</span><br><span class="line">        Intent intent)</span></span><br><span class="line">        <span class="keyword">throws</span> InstantiationException, IllegalAccessException,</span><br><span class="line">        ClassNotFoundException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (Activity)cl.loadClass(className).newInstance();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>newActivity()</code>方法使用注入的ClassLoader直接load Activity的类名生成activity。</p>
+<p>由于默认是系统的<code>PathClassLoader</code>，不支持从apk中加载类文件，所以我们需要更改ClassLoader来实现加载插件apk中的类文件。</p>
+<p>之前<strong>Android PluginManager</strong>在初始化的时候通过反射更改了Context的ClassLoader .</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">            Object mPackageInfo = ReflectionUtils.getFieldValue(ctx,</span><br><span class="line">                    <span class="string">"mBase.mPackageInfo"</span>, <span class="keyword">true</span>);</span><br><span class="line">            frameworkClassLoader = <span class="keyword">new</span> FrameworkClassLoader(</span><br><span class="line">                    ctx.getClassLoader());</span><br><span class="line">            <span class="comment">// set Application's classLoader to FrameworkClassLoader</span></span><br><span class="line">            ReflectionUtils.setFieldValue(mPackageInfo, <span class="string">"mClassLoader"</span>,</span><br><span class="line">                    frameworkClassLoader, <span class="keyword">true</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>mBase</code>就是<code>ContextImpl</code>，具体原因参见<a href="/2015/08/09/android-pluginmanager-source-code-analysis-1/#初始化插件的application">分析1</a>中ContextWapper的解释。</p>
+<p><code>r.packageInfo</code>和<code>ContexImpl</code>的<code>mPackageInfo</code>是同一对象。</p>
+<p>这样之后在加载Activity类文件时就会使用替换过的<code>FrameworkClassLoader</code>了。</p>
+<h2 id="FrameworkClassLoader">FrameworkClassLoader</h2><p><code>FrameworkClassLoader</code>职责比较简单，主要负责根据不同的类名选择不同的classLoader加载。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">if</span> (plugId != <span class="keyword">null</span>) &#123;</span><br><span class="line">	String pluginId = plugId;</span><br><span class="line"></span><br><span class="line">	PlugInfo plugin = PluginManager.getInstance().getPluginById(</span><br><span class="line">			pluginId);</span><br><span class="line">	<span class="keyword">if</span> (plugin != <span class="keyword">null</span>) &#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (className.equals(ActivityOverider.targetClassName)) &#123;</span><br><span class="line">				String actClassName = actName;</span><br><span class="line">				<span class="keyword">return</span> plugin.getClassLoader().loadActivityClass(</span><br><span class="line">						actClassName);</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> plugin.getClassLoader().loadClass(className);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">			e.printStackTrace();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> <span class="keyword">super</span>.loadClass(className, resolv);</span><br></pre></td></tr></table></figure>
+<p>这里有三种情况：</p>
+<ul>
+<li><p>加载插件中的Activity类</p>
+<p>当<code>className</code>为<code>androidx.pluginmgr.PluginActivity</code>时，说明要加载的类是由<strong>Android PluginManager</strong>自动生成的activity代理类，具体加载实现交由<code>PluginClassLoader.loadActivityClass()</code>处理。</p>
+</li>
+<li><p>加载插件中非Activity类</p>
+<p>当<code>className</code>为插件的其它自定义类时，选择<code>PluginClassLoader.loadClass()</code>加载。</p>
+</li>
+<li><p>加载宿主中的类</p>
+</li>
+</ul>
+<p>不是插件中的类，或者插件中的类加载异常了，选择默认的ClassLoader加载类。</p>
+<p>引用<a href="http://blog.csdn.net/hkxxx/article/details/42194387" target="_blank" rel="external">作者hkxxx大神</a>的两张图作说明：</p>
+<p><img src="/img/frameworkclassloader.png" alt="插件启动流程图"></p>
+<p><img src="/img/am_frameworkclassloader_class_diagram.png" alt="framwork classloader类加载结构"></p>
+<h2 id="PluginClassLoader">PluginClassLoader</h2><p><code>PluginClassLoader</code>继承自<code>DexClassLoader</code>，使用<code>FrameworkClassLoader</code>作为其委托的父ClassLoader。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// pluginManager初始化时实例化的PluginClassLoader</span></span><br><span class="line">PluginClassLoader loader = <span class="keyword">new</span> PluginClassLoader(dexPath,</span><br><span class="line">               dexOutputPath, frameworkClassLoader, info);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// PluginClassLoader构造函数</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">PluginClassLoader</span><span class="params">(String dexPath, String optimizedDir, ClassLoader parent, PlugInfo plugin)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">super</span>(dexPath, optimizedDir,plugin.getPackageInfo().applicationInfo.nativeLibraryDir,parent);</span><br><span class="line">	thisPlugin = plugin;</span><br><span class="line">	proxyActivityLoaderMap = <span class="keyword">new</span> HashMap&lt;String, ClassLoader&gt;(plugin.getActivities().size());</span><br><span class="line">	<span class="keyword">this</span>.libraryPath = plugin.getPackageInfo().applicationInfo.nativeLibraryDir;</span><br><span class="line">	<span class="keyword">this</span>.optimizedDirectory = optimizedDir;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>PluginClassLoader</code>维护一个DexClassLoader的map，缓存插件每个Activity的classLoader。</p>
+<p>为什么需要为每一个Activity都生成一个classloader呢？</p>
+<p>接着看<code>loadActivityClass()</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Class&lt;?&gt; loadActivityClass(<span class="keyword">final</span> String actClassName) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">	File dexSavePath = ActivityOverider.createProxyDex(thisPlugin, actClassName, <span class="keyword">true</span>);</span><br><span class="line">	ClassLoader actLoader = proxyActivityLoaderMap.get(actClassName);</span><br><span class="line">	<span class="keyword">if</span> (actLoader == <span class="keyword">null</span>) &#123;</span><br><span class="line">		actLoader = <span class="keyword">new</span> DexClassLoader(dexSavePath.getAbsolutePath(), optimizedDirectory,libraryPath, <span class="keyword">this</span>)&#123;</span><br><span class="line">			<span class="annotation">@Override</span></span><br><span class="line">			<span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">				Log.d(<span class="string">"PlugActClassLoader("</span>+ actClassName+<span class="string">")"</span>, <span class="string">"loadClass: "</span> + name);</span><br><span class="line">				<span class="keyword">if</span> (ActivityOverider.targetClassName.equals(name)) &#123;</span><br><span class="line">					Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">					<span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">						Log.d(<span class="string">"PlugActClassLoader("</span>+ actClassName+<span class="string">")"</span>, <span class="string">"findClass"</span>);</span><br><span class="line">						c = findClass(name);</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">if</span> (resolve) &#123;</span><br><span class="line">						resolveClass(c);</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">return</span> c;</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">return</span> <span class="keyword">super</span>.loadClass(name, resolve);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;;</span><br><span class="line">		proxyActivityLoaderMap.put(actClassName, actLoader);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> actLoader.loadClass(ActivityOverider.targetClassName);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>原来，<code>loadActivityClass()</code>方法在加载插件的Activity之前，为每个Activity使用<strong>dexmaker</strong>动态生成了一个代理的<code>PluginActivity</code>继承自原Activity，这样插件中的每个Activity都有一个<code>PluginActivity.dex</code>文件。</p>
+<p>另外，由于<a href="http://www.trinea.cn/android/java-loader-common-class/" target="_blank" rel="external">ClassLoader隔离问题</a>，必须把每个classloader缓存起来，以免下次重新加载同一类会报类型转换失败的错。</p>
+<p>这里new的DexClassLoader重载了<code>loadClass()</code>方法，当要加载类是<code>androidx.pluginmgr.PluginActivity</code>时 ，更改了默认的查找方式，不再先从parent Classloader中查找，而是直接自己查找类文件。</p>
+<p>值得注意的是，生成<code>PluginActivity.dex</code>的过程一直处于主线程，其中进行了大量的文件操作，可能会引起ANR。</p>
+<p>剩下就是重载ClassLoader的<code>loadClass()</code>方法了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve)</span><br><span class="line">			<span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">		<span class="keyword">synchronized</span> (getClassLoadingLock(name)) &#123;</span><br><span class="line">			<span class="comment">// First, check if the class has already been loaded</span></span><br><span class="line">			Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">			<span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">if</span>(name.startsWith(<span class="string">"android.support."</span>))&#123;</span><br><span class="line">					<span class="keyword">try</span> &#123;</span><br><span class="line">						c = findClass(name);</span><br><span class="line">					&#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">						c = findByParent(name, <span class="keyword">true</span>);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">					c = findByParent(name, <span class="keyword">false</span>);</span><br><span class="line">					<span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">						c = findClass(name);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (resolve) &#123;</span><br><span class="line">				resolveClass(c);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span> c;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>这里判断了如果类名是以<code>android.support.</code>开头，说明是support包里的类，优先从当前的classloader加载，在插件中找不到时再从宿主中查找，避免与宿主support包冲突。</p>
+<p>如果类名不以<code>android.support.</code>开头，则还是遵循java的ClassLoader的加载类的方式，先委托给parent查找，找不到再从自己查找。</p>
+<p><code>findByParent()</code>方法是为了查找真正宿主的ClassLoader。先取当前ClassLoader的parent ClassLoader，如果是FrameworkClassLoader的话，继续向上查找，即是宿主的ClassLoader。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">Class&lt;?&gt; c =<span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	ClassLoader parent = getParent();</span><br><span class="line">	<span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">			<span class="keyword">if</span> (parent.getClass() == FrameworkClassLoader.class) &#123;</span><br><span class="line">				parent = parent.getParent();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">				c = parent.loadClass(name);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">	<span class="keyword">if</span>(throwEx)&#123;</span><br><span class="line">		<span class="keyword">throw</span> e;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> c;</span><br></pre></td></tr></table></figure>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/AndroidThread/">AndroidThread</a><a href="/tags/ClassLoader/">ClassLoader</a><a href="/tags/DexClassLoader/">DexClassLoader</a><a href="/tags/反射/">反射</a><a href="/tags/插件/">插件</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://lwn.me/2015/08/10/android-pluginmanager-source-code-analysis-2/" data-title="Android PluginManager 源码解析2--FrameworkClassLoader | Fatter&#39;s Blog" data-tsina="2807580682" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2015/08/11/android-pluginmanager-source-code-analysis-3/" title="Android PluginManager 源码解析3--PluginManifestUtil">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Android PluginManager 源码解析3--PluginManifestUtil</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2015/08/09/android-pluginmanager-source-code-analysis-1/"  title="Android PluginManager 源码解析1--PluginManager">
+ <strong>下一篇：</strong><br/> 
+ <span>Android PluginManager 源码解析1--PluginManager
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Android_启动Activity的机制"><span class="toc-number">1.</span> <span class="toc-text">Android 启动Activity的机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FrameworkClassLoader"><span class="toc-number">2.</span> <span class="toc-text">FrameworkClassLoader</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PluginClassLoader"><span class="toc-number">3.</span> <span class="toc-text">PluginClassLoader</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>2</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/插件/" title="插件">插件<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/bitmap/" title="bitmap">bitmap<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ClassLoader/" title="ClassLoader">ClassLoader<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vo/" title="vo">vo<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/反射/" title="反射">反射<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/抓包/" title="抓包">抓包<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/drawable/" title="drawable">drawable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/paint/" title="paint">paint<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/PluginActivity/" title="PluginActivity">PluginActivity<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ContextWrapper/" title="ContextWrapper">ContextWrapper<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/PackageManager/" title="PackageManager">PackageManager<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/androidManifest/" title="androidManifest">androidManifest<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.trinea.cn/" target="_blank" title="Trinea&#39;s Blog">Trinea&#39;s Blog</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://codekk.com/open-source-project-analysis" target="_blank" title="Codekk">Codekk</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/Trinea/android-open-project" target="_blank" title="android-open-project">android-open-project</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://asce1885.gitbooks.io/android-rd-senior-advanced/content/" target="_blank" title="android-rd-senior-advanced">android-rd-senior-advanced</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello, I&#39;m Fatter in Google. <br/>
+			This is my blog, believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/fatterx" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/fatterx" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:lwn888@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2015 
+		
+		<a href="/about" target="_blank" title="Fatter">Fatter</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'fatterx';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-48995178-1', 'lwn.me');  
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

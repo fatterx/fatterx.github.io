@@ -4,32 +4,29 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Android PluginManager 源码解析1 | Fatter&#39;s Blog</title>
+    <title>Android PluginManager 源码解析1--PluginManager | Fatter&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Fatter">
     
 
     
-    <meta name="description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架。项目地址：https://github.com/houkx/android-pluginmgr
-相比于其他的插件化解决方案，主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。
-实现的功能点：
-插件为普通">
+    <meta name="description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。
+项目地址：https://github.com/houkx/android-pluginmgr
+相比于其他的插件化解决方案，Android pluginManager主要优势是采用了动态代理技术，自动为插件">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Android PluginManager 源码解析1">
+<meta property="og:title" content="Android PluginManager 源码解析1--PluginManager">
 <meta property="og:url" content="http://lwn.me/2015/08/09/android-pluginmanager-source-code-analysis-1/index.html">
 <meta property="og:site_name" content="Fatter's Blog">
-<meta property="og:description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架。项目地址：https://github.com/houkx/android-pluginmgr
-相比于其他的插件化解决方案，主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。
-实现的功能点：
-插件为普通">
-<meta property="og:updated_time" content="2015-08-10T09:28:05.000Z">
+<meta property="og:description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。
+项目地址：https://github.com/houkx/android-pluginmgr
+相比于其他的插件化解决方案，Android pluginManager主要优势是采用了动态代理技术，自动为插件">
+<meta property="og:updated_time" content="2015-08-12T08:57:03.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Android PluginManager 源码解析1">
-<meta name="twitter:description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架。项目地址：https://github.com/houkx/android-pluginmgr
-相比于其他的插件化解决方案，主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。
-实现的功能点：
-插件为普通">
+<meta name="twitter:title" content="Android PluginManager 源码解析1--PluginManager">
+<meta name="twitter:description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。
+项目地址：https://github.com/houkx/android-pluginmgr
+相比于其他的插件化解决方案，Android pluginManager主要优势是采用了动态代理技术，自动为插件">
 
     
     <link rel="alternative" href="/atom.xml" title="Fatter&#39;s Blog" type="application/atom+xml">
@@ -241,7 +238,7 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2015/08/09/android-pluginmanager-source-code-analysis-1/" title="Android PluginManager 源码解析1" itemprop="url">Android PluginManager 源码解析1</a>
+      <a href="/2015/08/09/android-pluginmanager-source-code-analysis-1/" title="Android PluginManager 源码解析1--PluginManager" itemprop="url">Android PluginManager 源码解析1--PluginManager</a>
   </h1>
   <p class="article-author">By
        
@@ -257,12 +254,13 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Android_PluginManager简介"><span class="toc-number">1.</span> <span class="toc-text">Android PluginManager简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#实现的功能点："><span class="toc-number">1.1.</span> <span class="toc-text">实现的功能点：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#尚未完成的部分："><span class="toc-number">1.2.</span> <span class="toc-text">尚未完成的部分：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一些限制："><span class="toc-number">1.3.</span> <span class="toc-text">一些限制：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PluginManager初始化"><span class="toc-number">2.</span> <span class="toc-text">PluginManager初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#获取application_Context"><span class="toc-number">2.1.</span> <span class="toc-text">获取application Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建plugins目录"><span class="toc-number">2.2.</span> <span class="toc-text">创建plugins目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建pluginouts目录"><span class="toc-number">2.3.</span> <span class="toc-text">创建pluginouts目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#替换classLoader"><span class="toc-number">2.4.</span> <span class="toc-text">替换classLoader</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加载插件"><span class="toc-number">3.</span> <span class="toc-text">加载插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#生成PluginInfo_对象保存插件信息"><span class="toc-number">3.1.</span> <span class="toc-text">生成PluginInfo 对象保存插件信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#copy插件apk文件到dexInternalStoragePath目录下"><span class="toc-number">3.2.</span> <span class="toc-text">copy插件apk文件到dexInternalStoragePath目录下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解析插件manifest-xml中的信息"><span class="toc-number">3.3.</span> <span class="toc-text">解析插件manifest.xml中的信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#生成自定义ClassLoader备用"><span class="toc-number">3.4.</span> <span class="toc-text">生成自定义ClassLoader备用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改AssetManager加载资源的位置"><span class="toc-number">3.5.</span> <span class="toc-text">修改AssetManager加载资源的位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#初始化插件的application"><span class="toc-number">3.6.</span> <span class="toc-text">初始化插件的application</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#加载目录下所有插件"><span class="toc-number">3.7.</span> <span class="toc-text">加载目录下所有插件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#启动插件中的MainActivity"><span class="toc-number">4.</span> <span class="toc-text">启动插件中的MainActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他方法"><span class="toc-number">5.</span> <span class="toc-text">其他方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Android_PluginManager简介"><span class="toc-number">1.</span> <span class="toc-text">Android PluginManager简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#实现的功能点："><span class="toc-number">1.1.</span> <span class="toc-text">实现的功能点：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#尚未完成的部分："><span class="toc-number">1.2.</span> <span class="toc-text">尚未完成的部分：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一些限制："><span class="toc-number">1.3.</span> <span class="toc-text">一些限制：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#动态加载apk的思路："><span class="toc-number">1.4.</span> <span class="toc-text">动态加载apk的思路：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PluginManager初始化"><span class="toc-number">2.</span> <span class="toc-text">PluginManager初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#获取application_Context"><span class="toc-number">2.1.</span> <span class="toc-text">获取application Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建plugins目录"><span class="toc-number">2.2.</span> <span class="toc-text">创建plugins目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建pluginouts目录"><span class="toc-number">2.3.</span> <span class="toc-text">创建pluginouts目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#替换classLoader"><span class="toc-number">2.4.</span> <span class="toc-text">替换classLoader</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加载插件"><span class="toc-number">3.</span> <span class="toc-text">加载插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#生成PluginInfo_对象保存插件信息"><span class="toc-number">3.1.</span> <span class="toc-text">生成PluginInfo 对象保存插件信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#copy插件apk文件到dexInternalStoragePath目录下"><span class="toc-number">3.2.</span> <span class="toc-text">copy插件apk文件到dexInternalStoragePath目录下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解析插件manifest-xml中的信息"><span class="toc-number">3.3.</span> <span class="toc-text">解析插件manifest.xml中的信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#生成自定义ClassLoader备用"><span class="toc-number">3.4.</span> <span class="toc-text">生成自定义ClassLoader备用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改AssetManager加载资源的位置"><span class="toc-number">3.5.</span> <span class="toc-text">修改AssetManager加载资源的位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#初始化插件的application"><span class="toc-number">3.6.</span> <span class="toc-text">初始化插件的application</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#加载目录下所有插件"><span class="toc-number">3.7.</span> <span class="toc-text">加载目录下所有插件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#启动插件中的MainActivity"><span class="toc-number">4.</span> <span class="toc-text">启动插件中的MainActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他方法"><span class="toc-number">5.</span> <span class="toc-text">其他方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
 		
 		</div>
 		
-		<h2 id="Android_PluginManager简介">Android PluginManager简介</h2><p>Android pluginManager是<a href="https://github.com/houkx/" target="_blank" rel="external">HouKangxi</a>大神开发的一个android插件化开发框架。项目地址：<a href="">https://github.com/houkx/android-pluginmgr</a></p>
-<p>相比于其他的插件化解决方案，主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。</p>
+		<h2 id="Android_PluginManager简介">Android PluginManager简介</h2><p><strong>Android pluginManager</strong>是<a href="https://github.com/houkx/" target="_blank" rel="external">HouKangxi</a>大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。</p>
+<p>项目地址：<a href="">https://github.com/houkx/android-pluginmgr</a></p>
+<p>相比于其他的插件化解决方案，<strong>Android pluginManager</strong>主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。</p>
 <h3 id="实现的功能点：">实现的功能点：</h3><ul>
 <li>插件为普通apk，无须依赖任何jar(摘自<a href="http://blog.csdn.net/hkxxx/article/details/42194387" target="_blank" rel="external">作者的博客</a>)</li>
 <li>Activity生命周期由系统自己管理</li>
@@ -276,6 +274,7 @@
 <li>初步支持.so</li>
 <li>支持插件使用 SharedPreference 或 SQLite数据库(尚未完善)</li>
 </ul>
+<a id="more"></a>
 <h3 id="尚未完成的部分：">尚未完成的部分：</h3><ul>
 <li>目前还不支持service、content provider</li>
 </ul>
@@ -284,12 +283,27 @@
 <li>不支持多进程</li>
 <li>Manifest中注册的activity的目前只能使用一种launchMode，<br>要支持singleTask等多种launchMode，需要自己维护activity栈来模拟。</li>
 </ul>
-<a id="more"></a>
+<h3 id="动态加载apk的思路：">动态加载apk的思路：</h3><p>就目前自己了解的情况来看，动态加载apk，一般是通过DexClassLoader，加载apk中的Activity。</p>
+<p>此时调起的Activity是普通的Java对象，没有了onCreate() 、onStart ()、onResume()、onPause()、onStop()、onDestory()等生命周期。</p>
+<p>为解决这个问题，一般都会在宿主中有一个ProxyActivity，它是一个真实的Activity，由系统管理它的生命周期。</p>
+<p>ProxyActivity持有一个插件的Activity的引用，当系统触发ProxyActivity的生命周期时，ProxyActivity通知插件的Activity来模拟正常Activity的生命周期。</p>
+<p>ProxyActivity通知插件的Activity方式分为两种：</p>
+<ul>
+<li>直接通过反射调用插件Activity的生命周期方法。效率较低</li>
+<li>插件Activity继承一个BasePluginActivity或者实现一个PluginInterface。对插件浸入性较大，需要改动较多代码。</li>
+</ul>
+<p>其中一个难点是插件资源文件的访问。</p>
+<p>由于Activity变成了普通的Java对象，没有了Context，不能通过getResources()直接访问插件中的资源。<br>解决方案有几种：</p>
+<ul>
+<li>把插件的资源复制到宿主中，向插件注入宿主的Context</li>
+<li>把插件的资源解压到sd卡某路径下，以流的形式读取，自己解析</li>
+<li>修改AssetManager，把插件的路径添加到AssetManager中</li>
+</ul>
 <h2 id="PluginManager初始化">PluginManager初始化</h2><ul>
 <li><h3 id="获取application_Context">获取application Context</h3></li>
 </ul>
 <p>PluginManager是一个单例，在初始化时将宿主（host）application Context 作为PluginManager的Context</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> Context ctx = context.getApplicationContext();</span><br><span class="line"><span class="keyword">synchronized</span> (PluginManager.class) &#123;</span><br><span class="line">    instance.init(ctx);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Context ctx = context.getApplicationContext();</span><br><span class="line"><span class="keyword">synchronized</span> (PluginManager.class) &#123;</span><br><span class="line">    instance.init(ctx);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ul>
 <li><h3 id="创建plugins目录">创建plugins目录</h3></li>
 </ul>
@@ -332,15 +346,16 @@
 <li><h3 id="修改AssetManager加载资源的位置">修改AssetManager加载资源的位置</h3></li>
 </ul>
 <p>现在已经能加载apk中的类文件了，但是还不能直接访问apk中的资源文件。</p>
-<p>android中加载资源文件均是通过<code>Context.getResources()</code>获取的。</p>
-<p>而<code>Resources</code>对象则是<code>ResourcesManager.getTopLevelResources()</code>通过<code>AssertManager</code>生成的。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">           </span><br><span class="line">   <span class="function"><span class="keyword">public</span> Resources <span class="title">getTopLevelResources</span><span class="params">(String resDir, String[] splitResDirs,</span><br><span class="line">           String[] overlayDirs, String[] libDirs, <span class="keyword">int</span> displayId,</span><br><span class="line">           Configuration overrideConfiguration, CompatibilityInfo compatInfo, IBinder token)</span> </span>&#123;</span><br><span class="line">           ...</span><br><span class="line">      AssetManager assets = <span class="keyword">new</span> AssetManager();</span><br><span class="line">       <span class="comment">// resDir can be null if the 'android' package is creating a new Resources object.</span></span><br><span class="line">       <span class="comment">// This is fine, since each AssetManager automatically loads the 'android' package</span></span><br><span class="line">       <span class="comment">// already.</span></span><br><span class="line">       <span class="keyword">if</span> (resDir != <span class="keyword">null</span>) &#123;</span><br><span class="line">           <span class="keyword">if</span> (assets.addAssetPath(resDir) == <span class="number">0</span>) &#123;</span><br><span class="line">               <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">       </span><br><span class="line">       ...</span><br><span class="line">       r = <span class="keyword">new</span> Resources(assets, dm, config, compatInfo, token);</span><br><span class="line">       ...</span><br><span class="line">       </span><br><span class="line">       <span class="keyword">return</span> r;</span><br><span class="line">｝</span><br></pre></td></tr></table></figure>
-<p><code>Recoures中</code>的<code>getString()</code>、<code>getDrawable()</code>则又是委托给<code>AssetManager</code>的<code>loadResourceValue()</code>方法读取res下的资源。</p>
-<p><code>AssetManager</code>提供了一个<code>addAssetPath()</code>方法，</p>
+<p>平常通过<code>Context.getString()</code>、<code>Context.getDrawable()</code>访问res中的资源文件，其实是委托给<code>Resources</code>处理的，所以要使插件能正确读取资源文件，需要从<code>Resources</code>入手。</p>
+<p>继续分析<code>Resources</code>，发现<code>Resources.getString()</code>、<code>Resources.getDrawable()</code>等又是委托给<code>AssetManager</code>的<code>getResourceValue()</code>方法读取res下的资源。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Drawable <span class="title">getDrawable</span><span class="params">(<span class="keyword">int</span> id, @Nullable Theme theme)</span> <span class="keyword">throws</span> NotFoundException </span>&#123;</span><br><span class="line">    TypedValue value;</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 通过getValue从res中读取数据</span></span><br><span class="line">    getValue(id, value, <span class="keyword">true</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 把typedValue中的数据转为Drawable</span></span><br><span class="line">    <span class="keyword">final</span> Drawable res = loadDrawable(value, id, theme);</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getValue</span><span class="params">(<span class="keyword">int</span> id, TypedValue outValue, <span class="keyword">boolean</span> resolveRefs)</span></span><br><span class="line">        <span class="keyword">throws</span> NotFoundException </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">// 委托给assetManager读取资源，把资源元数据保存在typedValue中</span></span><br><span class="line">    mAssets.getResourceValue(id, <span class="number">0</span>, outValue, resolveRefs);</span><br><span class="line">    </span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>并且<code>Resources</code>对象是<code>ResourcesManager.getTopLevelResources()</code>通过<code>AssertManager</code>生成的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">           </span><br><span class="line">   <span class="function"><span class="keyword">public</span> Resources <span class="title">getTopLevelResources</span><span class="params">(String resDir, String[] splitResDirs,</span><br><span class="line">           String[] overlayDirs, String[] libDirs, <span class="keyword">int</span> displayId,</span><br><span class="line">           Configuration overrideConfiguration, CompatibilityInfo compatInfo, IBinder token)</span> </span>&#123;</span><br><span class="line">           ...</span><br><span class="line">      AssetManager assets = <span class="keyword">new</span> AssetManager();</span><br><span class="line">       </span><br><span class="line">       <span class="keyword">if</span> (resDir != <span class="keyword">null</span>) &#123;</span><br><span class="line">           <span class="keyword">if</span> (assets.addAssetPath(resDir) == <span class="number">0</span>) &#123;</span><br><span class="line">               <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">       </span><br><span class="line">       ...</span><br><span class="line">       r = <span class="keyword">new</span> Resources(assets, dm, config, compatInfo, token);</span><br><span class="line">       ...</span><br><span class="line">       </span><br><span class="line">       <span class="keyword">return</span> r;</span><br><span class="line">｝</span><br></pre></td></tr></table></figure>
+<p>所以看起来只要搞定了<code>AssetManager</code>，就能顺利使插件访问到正确的资源文件了。</p>
+<p>继续分析<code>AssetManager</code>，幸运的是<code>AssetManager</code>提供了一个<code>addAssetPath()</code>方法，可以直接读取zip文件中的资源。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span><br><span class="line"> * Add an additional set of assets to the asset manager.  This can be</span><br><span class="line"> * either a directory or ZIP file.  Not for use by applications.  Returns</span><br><span class="line"> * the cookie of the added asset, or 0 on failure.</span><br><span class="line"> * &#123;<span class="doctag">@hide</span>&#125;</span><br><span class="line"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">addAssetPath</span><span class="params">(String path)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> res = addAssetPathNative(path);</span><br><span class="line">        makeStringBlocks(mStringBlocks);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>可以直接读取zip文件中的资源。</p>
-<p>我们把<code>dexInternalStoragePath</code>下之前copy的插件apk添加到assetpath中，这样之后生成的代理activity能访问到插件中的资源文件。</p>
-<p>所以我们需要生成一个<code>AssetManager</code>，并把插件apk的路径添加进<code>AssetManager</code>中。</p>
+<p>所以我们把插件apk的路径添加到assetpath中，之后生成的代理activity就能访问到插件中的资源文件。</p>
+<p>我们需要生成一个<code>AssetManager</code>，并把插件apk的路径添加进<code>AssetManager</code>中。</p>
 <p><code>AssetManager</code>并不能直接new出来，<code>addAssetPath()</code>方法也不能直接方法，但是都可以同反射解决。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    AssetManager am = (AssetManager) AssetManager.class.newInstance();</span><br><span class="line">    am.getClass().getMethod(<span class="string">"addAssetPath"</span>, String.class)</span><br><span class="line">            .invoke(am, dexPath);</span><br><span class="line">    info.setAssetManager(am);</span><br><span class="line">    Resources ctxres = context.getResources();</span><br><span class="line">    Resources res = <span class="keyword">new</span> Resources(am, ctxres.getDisplayMetrics(),</span><br><span class="line">            ctxres.getConfiguration());</span><br><span class="line">    info.setResources(res);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这样便可以访问插件中的资源了。</p>
@@ -384,13 +399,18 @@
 </div>
 
 
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/ClassLoader/">ClassLoader</a><a href="/tags/反射/">反射</a><a href="/tags/插件/">插件</a>
+  </div>
+
 </div>
 
 
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://lwn.me/2015/08/09/android-pluginmanager-source-code-analysis-1/" data-title="Android PluginManager 源码解析1 | Fatter&#39;s Blog" data-tsina="2807580682" class="share clearfix">
+	  <div data-url="http://lwn.me/2015/08/09/android-pluginmanager-source-code-analysis-1/" data-title="Android PluginManager 源码解析1--PluginManager | Fatter&#39;s Blog" data-tsina="2807580682" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -403,6 +423,14 @@
 	
 <nav class="article-nav clearfix">
  
+ <div class="prev" >
+ <a href="/2015/08/10/android-pluginmanager-source-code-analysis-2/" title="Android PluginManager 源码解析2--FrameworkClassLoader">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Android PluginManager 源码解析2--FrameworkClassLoader</span>
+</a>
+</div>
+
 
 <div class="next">
 <a href="/2014/11/02/javascript-vo-closure-scopechain/"  title="图解javascript中的变量对象、闭包、作用域链机理">
@@ -428,7 +456,7 @@
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
  
- <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Android_PluginManager简介"><span class="toc-number">1.</span> <span class="toc-text">Android PluginManager简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#实现的功能点："><span class="toc-number">1.1.</span> <span class="toc-text">实现的功能点：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#尚未完成的部分："><span class="toc-number">1.2.</span> <span class="toc-text">尚未完成的部分：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一些限制："><span class="toc-number">1.3.</span> <span class="toc-text">一些限制：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PluginManager初始化"><span class="toc-number">2.</span> <span class="toc-text">PluginManager初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#获取application_Context"><span class="toc-number">2.1.</span> <span class="toc-text">获取application Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建plugins目录"><span class="toc-number">2.2.</span> <span class="toc-text">创建plugins目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建pluginouts目录"><span class="toc-number">2.3.</span> <span class="toc-text">创建pluginouts目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#替换classLoader"><span class="toc-number">2.4.</span> <span class="toc-text">替换classLoader</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加载插件"><span class="toc-number">3.</span> <span class="toc-text">加载插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#生成PluginInfo_对象保存插件信息"><span class="toc-number">3.1.</span> <span class="toc-text">生成PluginInfo 对象保存插件信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#copy插件apk文件到dexInternalStoragePath目录下"><span class="toc-number">3.2.</span> <span class="toc-text">copy插件apk文件到dexInternalStoragePath目录下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解析插件manifest-xml中的信息"><span class="toc-number">3.3.</span> <span class="toc-text">解析插件manifest.xml中的信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#生成自定义ClassLoader备用"><span class="toc-number">3.4.</span> <span class="toc-text">生成自定义ClassLoader备用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改AssetManager加载资源的位置"><span class="toc-number">3.5.</span> <span class="toc-text">修改AssetManager加载资源的位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#初始化插件的application"><span class="toc-number">3.6.</span> <span class="toc-text">初始化插件的application</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#加载目录下所有插件"><span class="toc-number">3.7.</span> <span class="toc-text">加载目录下所有插件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#启动插件中的MainActivity"><span class="toc-number">4.</span> <span class="toc-text">启动插件中的MainActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他方法"><span class="toc-number">5.</span> <span class="toc-text">其他方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Android_PluginManager简介"><span class="toc-number">1.</span> <span class="toc-text">Android PluginManager简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#实现的功能点："><span class="toc-number">1.1.</span> <span class="toc-text">实现的功能点：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#尚未完成的部分："><span class="toc-number">1.2.</span> <span class="toc-text">尚未完成的部分：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一些限制："><span class="toc-number">1.3.</span> <span class="toc-text">一些限制：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#动态加载apk的思路："><span class="toc-number">1.4.</span> <span class="toc-text">动态加载apk的思路：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PluginManager初始化"><span class="toc-number">2.</span> <span class="toc-text">PluginManager初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#获取application_Context"><span class="toc-number">2.1.</span> <span class="toc-text">获取application Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建plugins目录"><span class="toc-number">2.2.</span> <span class="toc-text">创建plugins目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建pluginouts目录"><span class="toc-number">2.3.</span> <span class="toc-text">创建pluginouts目录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#替换classLoader"><span class="toc-number">2.4.</span> <span class="toc-text">替换classLoader</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加载插件"><span class="toc-number">3.</span> <span class="toc-text">加载插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#生成PluginInfo_对象保存插件信息"><span class="toc-number">3.1.</span> <span class="toc-text">生成PluginInfo 对象保存插件信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#copy插件apk文件到dexInternalStoragePath目录下"><span class="toc-number">3.2.</span> <span class="toc-text">copy插件apk文件到dexInternalStoragePath目录下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解析插件manifest-xml中的信息"><span class="toc-number">3.3.</span> <span class="toc-text">解析插件manifest.xml中的信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#生成自定义ClassLoader备用"><span class="toc-number">3.4.</span> <span class="toc-text">生成自定义ClassLoader备用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改AssetManager加载资源的位置"><span class="toc-number">3.5.</span> <span class="toc-text">修改AssetManager加载资源的位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#初始化插件的application"><span class="toc-number">3.6.</span> <span class="toc-text">初始化插件的application</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#加载目录下所有插件"><span class="toc-number">3.7.</span> <span class="toc-text">加载目录下所有插件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#启动插件中的MainActivity"><span class="toc-number">4.</span> <span class="toc-text">启动插件中的MainActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他方法"><span class="toc-number">5.</span> <span class="toc-text">其他方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
  
   </div>
 
@@ -442,7 +470,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>6</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>9</sup></a></li>
 		  
 		
 		  
@@ -459,7 +487,15 @@
 		<ul class="clearfix">
 		
 			
+				<li><a href="/tags/插件/" title="插件">插件<sup>4</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/bitmap/" title="bitmap">bitmap<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ClassLoader/" title="ClassLoader">ClassLoader<sup>2</sup></a></li>
 			
 		
 			
@@ -467,27 +503,11 @@
 			
 		
 			
+				<li><a href="/tags/反射/" title="反射">反射<sup>2</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/drawable/" title="drawable">drawable<sup>1</sup></a></li>
 			
 		
 			
@@ -495,7 +515,27 @@
 			
 		
 			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/抓包/" title="抓包">抓包<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/drawable/" title="drawable">drawable<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
 			
 		
 			
@@ -507,7 +547,23 @@
 			
 		
 			
-				<li><a href="/tags/抓包/" title="抓包">抓包<sup>1</sup></a></li>
+				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/PluginActivity/" title="PluginActivity">PluginActivity<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ContextWrapper/" title="ContextWrapper">ContextWrapper<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/PackageManager/" title="PackageManager">PackageManager<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/androidManifest/" title="androidManifest">androidManifest<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -520,7 +576,25 @@
         
           <li>
             
-            	<a href="http://lwn.me" target="_blank" title="Fatter&#39;s Blog">Fatter&#39;s Blog</a>
+            	<a href="http://www.trinea.cn/" target="_blank" title="Trinea&#39;s Blog">Trinea&#39;s Blog</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://codekk.com/open-source-project-analysis" target="_blank" title="Codekk">Codekk</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/Trinea/android-open-project" target="_blank" title="android-open-project">android-open-project</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://asce1885.gitbooks.io/android-rd-senior-advanced/content/" target="_blank" title="android-rd-senior-advanced">android-rd-senior-advanced</a>
             
           </li>
         

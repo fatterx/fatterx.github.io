@@ -4,61 +4,35 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>如何在android上抓包 | Fatter&#39;s Blog</title>
+    <title>Android PluginManager 源码解析3--PluginManifestUtil | Fatter&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Fatter">
     
 
     
-    <meta name="description" content="用Charlesandroid4.0以上的系统，wifi环境下支持设置网络代理。
+    <meta name="description" content="PluginManifestUtil分析PluginManifestUtil是Android PluginManager的一个工具类。只有一个公共方法setManifestInfo()，负责解析插件apk中的androidManifest.xml文件，并将解析的信息保存到PluginInfo中。
 
-安装Charles
+解析PackageInfo
 
-打开Charles，在proxy–&amp;gt;proxy settings–&amp;gt;proxies中设置要监听的端口号，一般为8080
-
-查看本机ip，
-$ ifconfig
-
-记住本机的ip地址，如222.11.22.11
-
-将android手机连上wifi，确保与电脑处于同一ip段。
-一般在w">
+通过PackageManager获取插件apk文件的PackageIn">
 <meta property="og:type" content="article">
-<meta property="og:title" content="如何在android上抓包">
-<meta property="og:url" content="http://lwn.me/2014/03/21/how-to-view-network-requests-on-android/index.html">
+<meta property="og:title" content="Android PluginManager 源码解析3--PluginManifestUtil">
+<meta property="og:url" content="http://lwn.me/2015/08/11/android-pluginmanager-source-code-analysis-3/index.html">
 <meta property="og:site_name" content="Fatter's Blog">
-<meta property="og:description" content="用Charlesandroid4.0以上的系统，wifi环境下支持设置网络代理。
+<meta property="og:description" content="PluginManifestUtil分析PluginManifestUtil是Android PluginManager的一个工具类。只有一个公共方法setManifestInfo()，负责解析插件apk中的androidManifest.xml文件，并将解析的信息保存到PluginInfo中。
 
-安装Charles
+解析PackageInfo
 
-打开Charles，在proxy–&amp;gt;proxy settings–&amp;gt;proxies中设置要监听的端口号，一般为8080
-
-查看本机ip，
-$ ifconfig
-
-记住本机的ip地址，如222.11.22.11
-
-将android手机连上wifi，确保与电脑处于同一ip段。
-一般在w">
-<meta property="og:image" content="http://lwn.me/img/charles.png">
-<meta property="og:image" content="http://lwn.me/img/wireshark.png">
-<meta property="og:updated_time" content="2015-08-05T14:23:25.000Z">
+通过PackageManager获取插件apk文件的PackageIn">
+<meta property="og:updated_time" content="2015-08-12T10:09:34.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="如何在android上抓包">
-<meta name="twitter:description" content="用Charlesandroid4.0以上的系统，wifi环境下支持设置网络代理。
+<meta name="twitter:title" content="Android PluginManager 源码解析3--PluginManifestUtil">
+<meta name="twitter:description" content="PluginManifestUtil分析PluginManifestUtil是Android PluginManager的一个工具类。只有一个公共方法setManifestInfo()，负责解析插件apk中的androidManifest.xml文件，并将解析的信息保存到PluginInfo中。
 
-安装Charles
+解析PackageInfo
 
-打开Charles，在proxy–&amp;gt;proxy settings–&amp;gt;proxies中设置要监听的端口号，一般为8080
-
-查看本机ip，
-$ ifconfig
-
-记住本机的ip地址，如222.11.22.11
-
-将android手机连上wifi，确保与电脑处于同一ip段。
-一般在w">
+通过PackageManager获取插件apk文件的PackageIn">
 
     
     <link rel="alternative" href="/atom.xml" title="Fatter&#39;s Blog" type="application/atom+xml">
@@ -270,14 +244,14 @@ $ ifconfig
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2014/03/21/how-to-view-network-requests-on-android/" title="如何在android上抓包" itemprop="url">如何在android上抓包</a>
+      <a href="/2015/08/11/android-pluginmanager-source-code-analysis-3/" title="Android PluginManager 源码解析3--PluginManifestUtil" itemprop="url">Android PluginManager 源码解析3--PluginManifestUtil</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
 		
   <p class="article-time">
-    <time datetime="2014-03-20T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-03-21</time>
+    <time datetime="2015-08-11T07:12:55.000Z" itemprop="datePublished"> 发表于 2015-08-11</time>
     
   </p>
 </header>
@@ -286,61 +260,43 @@ $ ifconfig
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#用Charles"><span class="toc-number">1.</span> <span class="toc-text">用Charles</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#用tcpdump结合wireshark"><span class="toc-number">2.</span> <span class="toc-text">用tcpdump结合wireshark</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#PluginManifestUtil分析"><span class="toc-number">1.</span> <span class="toc-text">PluginManifestUtil分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#解析PackageInfo"><span class="toc-number">1.1.</span> <span class="toc-text">解析PackageInfo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#处理so文件"><span class="toc-number">1.2.</span> <span class="toc-text">处理so文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#自定义解析manifest-xml"><span class="toc-number">1.3.</span> <span class="toc-text">自定义解析manifest.xml</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#绑定manifestXml信息到PluginInfo"><span class="toc-number">1.4.</span> <span class="toc-text">绑定manifestXml信息到PluginInfo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">2.</span> <span class="toc-text">参考</span></a></li></ol>
 		
 		</div>
 		
-		<h2 id="用Charles">用Charles</h2><p><strong>android4.0以上的系统，wifi环境下支持设置网络代理。</strong></p>
+		<h2 id="PluginManifestUtil分析">PluginManifestUtil分析</h2><p><strong>PluginManifestUtil</strong>是<strong>Android PluginManager</strong>的一个工具类。只有一个公共方法<code>setManifestInfo()</code>，负责解析插件apk中的androidManifest.xml文件，并将解析的信息保存到<code>PluginInfo</code>中。</p>
 <ul>
-<li><p>安装<a href="http://www.charlesproxy.com/" target="_blank" rel="external">Charles</a></p>
-</li>
-<li><p>打开Charles，在<code>proxy</code>–&gt;<code>proxy settings</code>–&gt;<code>proxies</code>中设置要监听的端口号，一般为<strong>8080</strong></p>
-</li>
-<li><p>查看本机ip，</p>
-<pre><code><span class="variable">$ </span>ifconfig
-</code></pre></li>
-<li><p>记住本机的ip地址，如<strong>222.11.22.11</strong></p>
-</li>
-<li>将android手机连上wifi，确保与电脑处于<strong>同一</strong>ip段。</li>
-<li><p>一般在wifi连接的<strong>高级设置</strong>里可以找到<strong>代理设置</strong>，将代理设置改为<strong>手动</strong>，<br>填入刚才记下的ip地址，以及Charles里设置的端口号<strong>8080</strong>，保存后退出。<br>现在手机的网络请求都会被转发到Charles上。</p>
+<li><h3 id="解析PackageInfo">解析PackageInfo</h3></li>
+</ul>
+<p>通过<code>PackageManager</code>获取插件apk文件的<code>PackageInfo</code>，保持在<code>PluginInfo</code>中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PackageInfo pkgInfo = context.getPackageManager()</span><br><span class="line">		.getPackageArchiveInfo(</span><br><span class="line">				apkPath,</span><br><span class="line">				PackageManager.GET_ACTIVITIES</span><br><span class="line">						| PackageManager.GET_RECEIVERS<span class="comment">//</span></span><br><span class="line">						| PackageManager.GET_PROVIDERS<span class="comment">//</span></span><br><span class="line">						| PackageManager.GET_META_DATA<span class="comment">//</span></span><br><span class="line">						| PackageManager.GET_SHARED_LIBRARY_FILES<span class="comment">//</span></span><br><span class="line">		<span class="comment">// | PackageManager.GET_SERVICES//</span></span><br><span class="line">		<span class="comment">// | PackageManager.GET_SIGNATURES//</span></span><br><span class="line">		);</span><br><span class="line"><span class="comment">// Log.d("ManifestReader: setManifestInfo", "GET_SHARED_LIBRARY_FILES="</span></span><br><span class="line"><span class="comment">// + pkgInfo.applicationInfo.nativeLibraryDir);</span></span><br><span class="line">info.setPackageInfo(pkgInfo);</span><br></pre></td></tr></table></figure>
+<p><code>PackageInfo</code>保存有插件apk的包名、版本、注册的activities、services、receivers、providers、声明的权限等信息。<br>但是<strong>Android PluginManager</strong>目前只处理了activities、receivers。</p>
 <a id="more"></a>
-<p>  <img src="/img/charles.png" alt="charles"></p>
-<p>这种方法只适合于抓去android4.0以上系统，wifi环境的网络请求。</p>
-<p>对于android2.x的系统，系统没有提供设置代理的方法。</p>
-<p>或者，我们需要查看 <em>2g</em> / <em>3g</em> / <em>4g</em> 的网络请求，用Chalers就无能为力了。</p>
-</li>
-</ul>
-<hr>
-<h2 id="用tcpdump结合wireshark">用tcpdump结合wireshark</h2><p><strong>前提是手机要root过</strong></p>
-<p> <a href="http://www.tcpdump.org" target="_blank" rel="external">tcpdump</a>是一个开源跨平台的网络数据采集分析工具。</p>
-<p> 详细用法参见<a href="http://www.cnblogs.com/ggjucheng/archive/2012/01/14/2322659.html" target="_blank" rel="external">ggjucheng</a>的博客。</p>
 <ul>
-<li><p>首先下载<a href="http://www.strazzere.com/android/tcpdump" target="_blank" rel="external">tcpdump</a></p>
-</li>
-<li><p>将<strong>tcpdump</strong> push到手机sd卡上</p>
-<pre><code>$ adb <span class="keyword">push</span> .<span class="regexp">/tcpdump /</span>sdcard<span class="regexp">/tcpdump</span>
-</code></pre></li>
-<li><p>用<strong>rootExplorer</strong>将<strong>tcpdump</strong>复制到<em>/system/xbin</em>目录下</p>
-</li>
-<li><p>获取root权限</p>
-<pre><code><span class="variable">$ </span>adb shell
-<span class="variable">$ </span>su
-</code></pre></li>
-<li><p>给<strong>tcpdump</strong>加上权限</p>
-<pre><code>$ <span class="keyword">chmod</span> <span class="number">777</span> /<span class="keyword">system</span>/xbin/tcpdump
-</code></pre></li>
-<li><p>然后就是执行<strong>tcpdump</strong>开始抓包了</p>
-<pre><code>$ tcpdump -<span class="tag">p</span> -vv -s <span class="number">0</span> -w /sdcard/cap.pcap
-</code></pre></li>
-<li><p>等收集到足够的数据包后<strong>ctrl + c</strong>停止抓包</p>
-</li>
-<li><p>把收集到的数据pull到本地</p>
-<pre><code>$ adb pull /sdcard/cap<span class="class">.pcap</span> ./
-</code></pre></li>
-<li><p>用<strong>wireshark</strong>打开<strong>pcap</strong>文件</p>
-<p>  <img src="/img/wireshark.png" alt="wireshark"></p>
-</li>
+<li><h3 id="处理so文件">处理so文件</h3></li>
 </ul>
+<p>查找插件apk中的<code>lib</code>中的so文件，并解压到<code>PluginBaseDir</code>即<code>PluginManager</code>中<code>dexInternalStoragePath</code> + <code>pluginId</code>+<code>lib</code>下面。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">File libdir = ActivityOverider.getPluginLibDir(info.getId());</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	<span class="keyword">if</span>(extractLibFile(zipFile, libdir))&#123;</span><br><span class="line">		pkgInfo.applicationInfo.nativeLibraryDir=libdir.getAbsolutePath();</span><br><span class="line">	&#125;</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">	zipFile.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查找过程会根据设备cpu架构copy相应的文件到<code>PluginBaseDir</code>。</p>
+<ul>
+<li><h3 id="自定义解析manifest-xml">自定义解析manifest.xml</h3></li>
+</ul>
+<p>使用<code>XmlManifestReader.getManifestXMLFromAPK()</code>读取插件apk中的manifest文件，然后通过<code>setAttrs()</code>方法解析manifest文件，把activity、reciever、application的信息保存在<code>PluginInfo</code>中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">ZipFile zipFile = <span class="keyword">new</span> ZipFile(<span class="keyword">new</span> File(apkPath), ZipFile.OPEN_READ);</span><br><span class="line">ZipEntry manifestXmlEntry = zipFile.getEntry(XmlManifestReader.DEFAULT_XML);</span><br><span class="line"></span><br><span class="line">String manifestXML = XmlManifestReader.getManifestXMLFromAPK(zipFile,</span><br><span class="line">		manifestXmlEntry);</span><br><span class="line">		</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">setAttrs(info, manifestXML);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="绑定manifestXml信息到PluginInfo">绑定manifestXml信息到PluginInfo</h3></li>
+</ul>
+<p>分别解析application、activity、reciever、service的信息，并绑定到<code>PluginInfo</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">do &#123;</span><br><span class="line">	<span class="keyword">switch</span> (eventType) &#123;</span><br><span class="line">	<span class="keyword">case</span> XmlPullParser.START_DOCUMENT: &#123;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">case</span> XmlPullParser.START_TAG: &#123;</span><br><span class="line">		String tag = parser.getName();</span><br><span class="line">		<span class="keyword">if</span> (tag.equals(<span class="string">"manifest"</span>)) &#123;</span><br><span class="line">			namespaceAndroid = parser.getNamespace(<span class="string">"android"</span>);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"activity"</span>.equals(parser.getName())) &#123;</span><br><span class="line">			addActivity(info, namespaceAndroid, parser);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"receiver"</span>.equals(parser.getName())) &#123;</span><br><span class="line">			addReceiver(info, namespaceAndroid, parser);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"service"</span>.equals(parser.getName())) &#123;</span><br><span class="line">			addService(info, namespaceAndroid, parser);</span><br><span class="line">		&#125;<span class="keyword">else</span> <span class="keyword">if</span>(<span class="string">"application"</span>.equals(parser.getName()))&#123;</span><br><span class="line">			parseApplicationInfo(info, namespaceAndroid, parser);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">case</span> XmlPullParser.END_TAG: &#123;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	eventType = parser.next();</span><br><span class="line">&#125; <span class="keyword">while</span> (eventType != XmlPullParser.END_DOCUMENT);</span><br></pre></td></tr></table></figure>
+<p>下面已activity为例分析。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">ResolveInfo act = <span class="keyword">new</span> ResolveInfo();</span><br><span class="line">act.activityInfo = info.findActivityByClassNameFromPkg(activityName);</span><br><span class="line">do &#123;</span><br><span class="line">	<span class="keyword">switch</span> (eventType) &#123;</span><br><span class="line">	<span class="keyword">case</span> XmlPullParser.START_TAG: &#123;</span><br><span class="line">		String tag = parser.getName();</span><br><span class="line">		<span class="keyword">if</span> (<span class="string">"intent-filter"</span>.equals(tag)) &#123;</span><br><span class="line">			<span class="keyword">if</span> (act.filter == <span class="keyword">null</span>) &#123;</span><br><span class="line">				act.filter = <span class="keyword">new</span> IntentFilter();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"action"</span>.equals(tag)) &#123;</span><br><span class="line">			String actionName = parser.getAttributeValue(namespace,</span><br><span class="line">					<span class="string">"name"</span>);</span><br><span class="line">			act.filter.addAction(actionName);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"category"</span>.equals(tag)) &#123;</span><br><span class="line">			String category = parser.getAttributeValue(namespace,</span><br><span class="line">					<span class="string">"name"</span>);</span><br><span class="line">			act.filter.addCategory(category);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">"data"</span>.equals(tag)) &#123;</span><br><span class="line">			<span class="comment">// TODO parse data</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	eventType = parser.next();</span><br><span class="line">&#125; <span class="keyword">while</span> (!<span class="string">"activity"</span>.equals(parser.getName()));</span><br><span class="line"><span class="comment">//</span></span><br><span class="line">info.addActivity(act);</span><br></pre></td></tr></table></figure>
+<p>模拟系统解析<code>ResolveInfo</code>的方式，为每一个插件apk中注册的Activity生成一个<code>ResolveInfo</code>，保存在<code>PluginInfo</code>中，供之后获取指定<code>Intent-Filter</code>的Activity、Service等使用。</p>
+<p>目前对于<code>intent-filter</code>中的<code>data</code>标签没有处理。</p>
+<h2 id="参考">参考</h2><ol>
+<li><a href="http://developer.android.com/reference/android/content/pm/ResolveInfo.html" target="_blank" rel="external">ResolveInfo</a></li>
+<li><a href="http://blog.csdn.net/wang_yubin/article/details/8564335" target="_blank" rel="external">android ResolveInfo运用</a></li>
+<li><a href="http://blog.csdn.net/lo5sea/article/details/38564991" target="_blank" rel="external">PackageInfo、ResolveInfo</a></li>
+</ol>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -354,7 +310,7 @@ $ ifconfig
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/tcpdump/">tcpdump</a><a href="/tags/抓包/">抓包</a>
+  <span></span> <a href="/tags/PackageInfo/">PackageInfo</a><a href="/tags/PackageManager/">PackageManager</a><a href="/tags/ResolveInfo/">ResolveInfo</a><a href="/tags/androidManifest/">androidManifest</a><a href="/tags/插件/">插件</a>
   </div>
 
 </div>
@@ -363,7 +319,7 @@ $ ifconfig
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://lwn.me/2014/03/21/how-to-view-network-requests-on-android/" data-title="如何在android上抓包 | Fatter&#39;s Blog" data-tsina="2807580682" class="share clearfix">
+	  <div data-url="http://lwn.me/2015/08/11/android-pluginmanager-source-code-analysis-3/" data-title="Android PluginManager 源码解析3--PluginManifestUtil | Fatter&#39;s Blog" data-tsina="2807580682" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -377,13 +333,21 @@ $ ifconfig
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2014/04/11/bitmap/" title="Android Bitmap的一点研究">
+ <a href="/2015/08/12/android-pluginmanager-source-code-analysis-4/" title="Android PluginManager 源码解析4--ActivityOverider">
   <strong>上一篇：</strong><br/>
   <span>
-  Android Bitmap的一点研究</span>
+  Android PluginManager 源码解析4--ActivityOverider</span>
 </a>
 </div>
 
+
+<div class="next">
+<a href="/2015/08/10/android-pluginmanager-source-code-analysis-2/"  title="Android PluginManager 源码解析2--FrameworkClassLoader">
+ <strong>下一篇：</strong><br/> 
+ <span>Android PluginManager 源码解析2--FrameworkClassLoader
+</span>
+</a>
+</div>
 
 </nav>
 
@@ -401,7 +365,7 @@ $ ifconfig
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
  
- <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#用Charles"><span class="toc-number">1.</span> <span class="toc-text">用Charles</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#用tcpdump结合wireshark"><span class="toc-number">2.</span> <span class="toc-text">用tcpdump结合wireshark</span></a></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#PluginManifestUtil分析"><span class="toc-number">1.</span> <span class="toc-text">PluginManifestUtil分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#解析PackageInfo"><span class="toc-number">1.1.</span> <span class="toc-text">解析PackageInfo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#处理so文件"><span class="toc-number">1.2.</span> <span class="toc-text">处理so文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#自定义解析manifest-xml"><span class="toc-number">1.3.</span> <span class="toc-text">自定义解析manifest.xml</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#绑定manifestXml信息到PluginInfo"><span class="toc-number">1.4.</span> <span class="toc-text">绑定manifestXml信息到PluginInfo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">2.</span> <span class="toc-text">参考</span></a></li></ol>
  
   </div>
 

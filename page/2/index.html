@@ -4,61 +4,22 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>如何在android上抓包 | Fatter&#39;s Blog</title>
+    <title>Fatter&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="Fatter">
     
 
     
-    <meta name="description" content="用Charlesandroid4.0以上的系统，wifi环境下支持设置网络代理。
-
-安装Charles
-
-打开Charles，在proxy–&amp;gt;proxy settings–&amp;gt;proxies中设置要监听的端口号，一般为8080
-
-查看本机ip，
-$ ifconfig
-
-记住本机的ip地址，如222.11.22.11
-
-将android手机连上wifi，确保与电脑处于同一ip段。
-一般在w">
-<meta property="og:type" content="article">
-<meta property="og:title" content="如何在android上抓包">
-<meta property="og:url" content="http://lwn.me/2014/03/21/how-to-view-network-requests-on-android/index.html">
+    <meta name="description">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Fatter's Blog">
+<meta property="og:url" content="http://lwn.me/page/2/index.html">
 <meta property="og:site_name" content="Fatter's Blog">
-<meta property="og:description" content="用Charlesandroid4.0以上的系统，wifi环境下支持设置网络代理。
-
-安装Charles
-
-打开Charles，在proxy–&amp;gt;proxy settings–&amp;gt;proxies中设置要监听的端口号，一般为8080
-
-查看本机ip，
-$ ifconfig
-
-记住本机的ip地址，如222.11.22.11
-
-将android手机连上wifi，确保与电脑处于同一ip段。
-一般在w">
-<meta property="og:image" content="http://lwn.me/img/charles.png">
-<meta property="og:image" content="http://lwn.me/img/wireshark.png">
-<meta property="og:updated_time" content="2015-08-05T14:23:25.000Z">
+<meta property="og:description">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="如何在android上抓包">
-<meta name="twitter:description" content="用Charlesandroid4.0以上的系统，wifi环境下支持设置网络代理。
-
-安装Charles
-
-打开Charles，在proxy–&amp;gt;proxy settings–&amp;gt;proxies中设置要监听的端口号，一般为8080
-
-查看本机ip，
-$ ifconfig
-
-记住本机的ip地址，如222.11.22.11
-
-将android手机连上wifi，确保与电脑处于同一ip段。
-一般在w">
+<meta name="twitter:title" content="Fatter's Blog">
+<meta name="twitter:description">
 
     
     <link rel="alternative" href="/atom.xml" title="Fatter&#39;s Blog" type="application/atom+xml">
@@ -264,86 +225,42 @@ $ ifconfig
 </div>
     </header>
     <div id="container">
-      <div id="main" class="post" itemscope itemprop="blogPost">
-  
-	<article itemprop="articleBody"> 
-		<header class="article-info clearfix">
+      <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2014/03/21/how-to-view-network-requests-on-android/" title="如何在android上抓包" itemprop="url">如何在android上抓包</a>
+      <a href="/2014/11/01/android-sdcard-mounting-method/" title="android不同系统版本sd的挂载方式" itemprop="url">android不同系统版本sd的挂载方式</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
 		
   <p class="article-time">
-    <time datetime="2014-03-20T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-03-21</time>
+    <time datetime="2014-10-31T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-11-01</time>
     
   </p>
 </header>
-	<div class="article-content">
-		
-		<div id="toc" class="toc-article">
-			<strong class="toc-title">文章目录</strong>
-		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#用Charles"><span class="toc-number">1.</span> <span class="toc-text">用Charles</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#用tcpdump结合wireshark"><span class="toc-number">2.</span> <span class="toc-text">用tcpdump结合wireshark</span></a></li></ol>
-		
-		</div>
-		
-		<h2 id="用Charles">用Charles</h2><p><strong>android4.0以上的系统，wifi环境下支持设置网络代理。</strong></p>
-<ul>
-<li><p>安装<a href="http://www.charlesproxy.com/" target="_blank" rel="external">Charles</a></p>
-</li>
-<li><p>打开Charles，在<code>proxy</code>–&gt;<code>proxy settings</code>–&gt;<code>proxies</code>中设置要监听的端口号，一般为<strong>8080</strong></p>
-</li>
-<li><p>查看本机ip，</p>
-<pre><code><span class="variable">$ </span>ifconfig
-</code></pre></li>
-<li><p>记住本机的ip地址，如<strong>222.11.22.11</strong></p>
-</li>
-<li>将android手机连上wifi，确保与电脑处于<strong>同一</strong>ip段。</li>
-<li><p>一般在wifi连接的<strong>高级设置</strong>里可以找到<strong>代理设置</strong>，将代理设置改为<strong>手动</strong>，<br>填入刚才记下的ip地址，以及Charles里设置的端口号<strong>8080</strong>，保存后退出。<br>现在手机的网络请求都会被转发到Charles上。</p>
-<a id="more"></a>
-<p>  <img src="/img/charles.png" alt="charles"></p>
-<p>这种方法只适合于抓去android4.0以上系统，wifi环境的网络请求。</p>
-<p>对于android2.x的系统，系统没有提供设置代理的方法。</p>
-<p>或者，我们需要查看 <em>2g</em> / <em>3g</em> / <em>4g</em> 的网络请求，用Chalers就无能为力了。</p>
-</li>
-</ul>
-<hr>
-<h2 id="用tcpdump结合wireshark">用tcpdump结合wireshark</h2><p><strong>前提是手机要root过</strong></p>
-<p> <a href="http://www.tcpdump.org" target="_blank" rel="external">tcpdump</a>是一个开源跨平台的网络数据采集分析工具。</p>
-<p> 详细用法参见<a href="http://www.cnblogs.com/ggjucheng/archive/2012/01/14/2322659.html" target="_blank" rel="external">ggjucheng</a>的博客。</p>
-<ul>
-<li><p>首先下载<a href="http://www.strazzere.com/android/tcpdump" target="_blank" rel="external">tcpdump</a></p>
-</li>
-<li><p>将<strong>tcpdump</strong> push到手机sd卡上</p>
-<pre><code>$ adb <span class="keyword">push</span> .<span class="regexp">/tcpdump /</span>sdcard<span class="regexp">/tcpdump</span>
-</code></pre></li>
-<li><p>用<strong>rootExplorer</strong>将<strong>tcpdump</strong>复制到<em>/system/xbin</em>目录下</p>
-</li>
-<li><p>获取root权限</p>
-<pre><code><span class="variable">$ </span>adb shell
-<span class="variable">$ </span>su
-</code></pre></li>
-<li><p>给<strong>tcpdump</strong>加上权限</p>
-<pre><code>$ <span class="keyword">chmod</span> <span class="number">777</span> /<span class="keyword">system</span>/xbin/tcpdump
-</code></pre></li>
-<li><p>然后就是执行<strong>tcpdump</strong>开始抓包了</p>
-<pre><code>$ tcpdump -<span class="tag">p</span> -vv -s <span class="number">0</span> -w /sdcard/cap.pcap
-</code></pre></li>
-<li><p>等收集到足够的数据包后<strong>ctrl + c</strong>停止抓包</p>
-</li>
-<li><p>把收集到的数据pull到本地</p>
-<pre><code>$ adb pull /sdcard/cap<span class="class">.pcap</span> ./
-</code></pre></li>
-<li><p>用<strong>wireshark</strong>打开<strong>pcap</strong>文件</p>
-<p>  <img src="/img/wireshark.png" alt="wireshark"></p>
-</li>
-</ul>
-  
-	</div>
-		<footer class="article-footer clearfix">
+    <div class="article-content">
+        
+        <h2 id="2-x系统">2.x系统</h2><p>sd卡实际挂载位置</p>
+<pre><code><span class="regexp">/mnt/</span>sdcard 
+</code></pre><p>并建立了一个/sdcard的软链接指向/mnt/sdcard</p>
+<pre><code><span class="regexp">/sdcard/</span>  --&gt; <span class="regexp">/mnt/</span>sdcard
+</code></pre><p><strong>Android 2.2之后的版本允许将应用程序安装于SD卡</strong></p>
+<p>当SD卡挂载于手机时，<code>/mnt/sdcard/.android_secure</code> 目录会被映射到<code>/mnt/asec</code> 目录和 <code>/mnt/secure</code> 目录。其中<code>/mnt/asec</code> 目录中主要是程序的安装目录，包括其执行文件和lib文件等；而<code>/mnt/secure</code> 目录中就存放程序加密后的档案。也就是说，在<code>/mnt</code>路径下看到的<code>/mnt/asec</code>目录和<code>/mnt/secure</code>目录并不是真正存在在手机内存里的，它们只是<code>/mnt/sdcard/.android_secure</code>目录的一个影像而已。也就是说<code>/mnt/sdcard/.android_secure</code> =<code>/mnt/secure</code> +<code>/mnt/asec</code></p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/11/01/android-sdcard-mounting-method/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
 <div class="article-catetags">
 
 <div class="article-categories">
@@ -354,56 +271,325 @@ $ ifconfig
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/tcpdump/">tcpdump</a><a href="/tags/抓包/">抓包</a>
+  <span></span> <a href="/tags/android/">android</a><a href="/tags/sdcard/">sdcard</a>
   </div>
 
 </div>
 
 
 
-	<div class="article-share" id="share">
-	
-	  <div data-url="http://lwn.me/2014/03/21/how-to-view-network-requests-on-android/" data-title="如何在android上抓包 | Fatter&#39;s Blog" data-tsina="2807580682" class="share clearfix">
-	  </div>
-	
-	</div>
 
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/11/01/android-sdcard-mounting-method/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
 
 </footer>
 
-   	       
-	</article>
-	
-<nav class="article-nav clearfix">
- 
- <div class="prev" >
- <a href="/2014/04/11/bitmap/" title="Android Bitmap的一点研究">
-  <strong>上一篇：</strong><br/>
-  <span>
-  Android Bitmap的一点研究</span>
-</a>
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/11/01/javascript-variable-object/" title="对javascript中的Variable Object的理解" itemprop="url">对javascript中的Variable Object的理解</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-10-31T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-11-01</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Variable_Object">Variable Object</h2><p>在<strong>ECMAScipt</strong>中，通过变量对象<strong>Variable Object (VO)</strong>机制来存贮、访问变量variables。<strong>VO</strong>中包含了：</p>
+<h3 id="1-_variables_(通过var_声明的变量)">1.  variables (通过var 声明的变量)</h3><h3 id="2-_function_declaration_(函数声明)">2.  function declaration (函数声明)</h3><h3 id="3-_function_formal_parameters_(函数行参)">3.  function formal parameters (函数行参)</h3><p><strong>注</strong>： 不包括function expression (函数表达式)。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/11/01/javascript-variable-object/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/javascript/">javascript</a>
 </div>
 
 
-</nav>
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/javascript/">javascript</a><a href="/tags/scope-chain/">scope chain</a><a href="/tags/vo/">vo</a>
+  </div>
 
+</div>
+
+
+
+
+<div class="comments-count">
 	
+	  	<span></span>
+		<a href="/2014/11/01/javascript-variable-object/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
 
-<section id="comments" class="comment">
-  <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/04/13/drawable/" title="Drawable小研究" itemprop="url">Drawable小研究</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-04-12T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-04-13</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Drawable，官方给出的解释是“<em>something that can be drawn</em>”，翻译过来就是可以被画的东西。</p>
+<p>官方把“可以被画的东西”分为了7种形式:</p>
+<ul>
+<li><p><a href="../../11/bitmap">Bitmap</a> 最简单的“可以被画的东西”，可能是png，或jpg</p>
+</li>
+<li><p><strong>Nine Patch</strong> 俗称“.9”图，android自己扩展的一种png格式，可以自定义图像拉伸的信息</p>
+</li>
+<li><p><strong>Shape</strong> 用简单的绘图指令生成图片。如画矩形、圆形</p>
+</li>
+<li><p><strong>Layers</strong> 多个Drawable，按照层叠顺序组成的Drawable</p>
+</li>
+<li><p><strong>States</strong> Drawable的状态，如“focused”, “pressed”等</p>
+</li>
+<li><p><strong>Levels</strong> 可以更改level的Drawable，如进度条，电池进度</p>
+</li>
+<li><p><strong>Scale</strong> 可缩放的Drawable</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/04/13/drawable/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/bitmap/">bitmap</a><a href="/tags/drawable/">drawable</a>
   </div>
-</section>
 
-</div>  
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/04/13/drawable/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/04/13/canvas/" title="canvas、bitmap、paint之间是什么关系" itemprop="url">canvas、bitmap、paint之间是什么关系</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-04-12T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-04-13</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p><a href="http://developer.android.com/reference/android/graphics/Canvas.html">官方文档</a>翻译过来的解释：</p>
+<p>要绘图，需要4个基本组件:</p>
+<ul>
+<li>Bitmap 保存像素的容器</li>
+<li>Canvas 执行绘图命令的宿主</li>
+<li>Rect/Path/text/Bitmap 要绘制的元素</li>
+<li>Paint 用什么样的方式绘制</li>
+</ul>
+<p>android的<strong>canvas</strong>绘图，基于<strong>skia</strong>，想要了解<strong>canvas</strong>的绘图过程，需要对<strong>canvas</strong>和<strong>skia</strong>的源码有所了解。</p>
+<p>查看Canvas源码，发现Canvas与Bitmap类似，都是对其native方法进行了封装。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/04/13/canvas/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/bitmap/">bitmap</a><a href="/tags/canvas/">canvas</a><a href="/tags/paint/">paint</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/04/13/canvas/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/04/11/bitmap/" title="Android Bitmap的一点研究" itemprop="url">Android Bitmap的一点研究</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-04-10T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-04-11</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>android中的<strong>Bitmap</strong>与其他对象不同，不能通过<code>new Bitmap()</code>直接实例化.</p>
+<p>查看源码，<strong>Bitmap</strong>的构造函数是<em>default</em>的，仅包内可见，实际是供<strong>native</strong>方法调用的。</p>
+<p><strong>Bitmap</strong>中实际保存数据的地方在<strong>native</strong>层，<strong>java</strong>层仅对<strong>native</strong>层方法进行封装、重载，</p>
+<p>并提供一些状态的判断方法、属性的<code>set</code>、<code>get</code>方法。</p>
+<p><strong>Bitmap</strong>有<code>mNativaBitmap</code>属性，用来保存<code>nativeBitmap</code>的地址。</p>
+<p><code>mNativeBitmap</code>的地址在构造<strong>Bitmap</strong>时，由<strong>native</strong>方法直接传递进来。</p>
+<p>####所以整个<strong>Bitmap</strong>可以认为在<strong>java</strong>层基本不怎么占内存，大部分内存占用都是在<strong>native</strong>层。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/04/11/bitmap/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/bitmap/">bitmap</a><a href="/tags/canvas/">canvas</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/04/11/bitmap/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+
+  <nav id="page-nav" class="clearfix">
+    <a class="extend prev" rel="prev" href="/"><span></span>Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next<span></span></a>
+  </nav>
+
+</div>
       <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
-
-  <div id="toc" class="toc-aside">
-  <strong class="toc-title">文章目录</strong>
- 
- <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#用Charles"><span class="toc-number">1.</span> <span class="toc-text">用Charles</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#用tcpdump结合wireshark"><span class="toc-number">2.</span> <span class="toc-text">用tcpdump结合wireshark</span></a></li></ol>
- 
-  </div>
 
 <div id="asidepart">
 <div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
@@ -643,89 +829,12 @@ $(document).ready(function(){
       m.removeClass('moveMain');
       a.css('display', 'block').removeClass('fadeOut');
       o.css('display', 'none');
-      
-      $('#toc.toc-aside').css('display', 'none');
         
     }
   });
 });
 </script>
 
-<script type="text/javascript">
-$(document).ready(function(){ 
-  var ai = $('.article-content>iframe'),
-      ae = $('.article-content>embed'),
-      t  = $('#toc'),
-      ta = $('#toc.toc-aside'),
-      o  = $('.openaside'),
-      c  = $('.closeaside');
-  if(ai.length>0){
-    ai.wrap('<div class="video-container" />');
-  };
-  if(ae.length>0){
-   ae.wrap('<div class="video-container" />');
-  };
-  c.click(function(){
-    ta.css('display', 'block').addClass('fadeIn');
-  });
-  o.click(function(){
-    ta.css('display', 'none');
-  });
-  $(window).scroll(function(){
-    ta.css("top",Math.max(140,320-$(this).scrollTop()));
-  });
-});
-</script>
-
-
-<script type="text/javascript">
-$(document).ready(function(){ 
-  var $this = $('.share'),
-      url = $this.attr('data-url'),
-      encodedUrl = encodeURIComponent(url),
-      title = $this.attr('data-title'),
-      tsina = $this.attr('data-tsina'),
-      description = $this.attr('description');
-  var html = [
-  '<div class="hoverqrcode clearfix"></div>',
-  '<a class="overlay" id="qrcode"></a>',
-  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
-  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
-  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
-  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
-  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
-  '<span title="Share to"></span>'
-  ].join('');
-  $this.append(html);
-
-  $('.hoverqrcode').hide();
-
-  var myWidth = 0;
-  function updatehoverqrcode(){
-    if( typeof( window.innerWidth ) == 'number' ) {
-      myWidth = window.innerWidth;
-    } else if( document.documentElement && document.documentElement.clientWidth) {
-      myWidth = document.documentElement.clientWidth;
-    };
-    var qrsize = myWidth > 1024 ? 200:100;
-    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
-    var p = $('.article-share-qrcode').position();
-    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
-                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
-                          .qrcode(options);
-  };
-  $(window).resize(function(){
-    $('.hoverqrcode').hide();
-  });
-  $('.article-share-qrcode').click(function(){
-    updatehoverqrcode();
-    $('.hoverqrcode').toggle();
-  });
-  $('.article-share-qrcode').hover(function(){}, function(){
-      $('.hoverqrcode').hide();
-  });
-});   
-</script>
 
 
 
@@ -815,4 +924,4 @@ ga('send', 'pageview');
 <!-- Tiny_search End -->
 
   </body>
-</html>
+ </html>

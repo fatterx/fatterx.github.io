@@ -1,0 +1,803 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Android PluginManager 源码解析4--ActivityOverider | Fatter&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Fatter">
+    
+
+    
+    <meta name="description" content="ActivityOverider概述ActivityOverider负责与动态生成的PluginActivity交互。
+ActivityOverider主要干了3件事：
+
+修正StartActivity的Intent
+动态生成PluginActivity的Dex文件
+处理PluginActivity生命周期的回调，根据需要做一些特殊处理
+
+overrideStartActivityForResul">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android PluginManager 源码解析4--ActivityOverider">
+<meta property="og:url" content="http://lwn.me/2015/08/12/android-pluginmanager-source-code-analysis-4/index.html">
+<meta property="og:site_name" content="Fatter's Blog">
+<meta property="og:description" content="ActivityOverider概述ActivityOverider负责与动态生成的PluginActivity交互。
+ActivityOverider主要干了3件事：
+
+修正StartActivity的Intent
+动态生成PluginActivity的Dex文件
+处理PluginActivity生命周期的回调，根据需要做一些特殊处理
+
+overrideStartActivityForResul">
+<meta property="og:updated_time" content="2015-08-12T10:12:27.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android PluginManager 源码解析4--ActivityOverider">
+<meta name="twitter:description" content="ActivityOverider概述ActivityOverider负责与动态生成的PluginActivity交互。
+ActivityOverider主要干了3件事：
+
+修正StartActivity的Intent
+动态生成PluginActivity的Dex文件
+处理PluginActivity生命周期的回调，根据需要做一些特殊处理
+
+overrideStartActivityForResul">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Fatter&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Fatter&#39;s Blog" title="Fatter&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Fatter&#39;s Blog">Fatter&#39;s Blog</a></h1>
+				<h2 class="blog-motto">让我们忠于理想，让我们面对现实</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/lab">实验室</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+						<li><a href='javascript:(function() {  
+    function c() {  
+        var e = document.createElement("link");  
+        e.setAttribute("type", "text/css");  
+        e.setAttribute("rel", "stylesheet");  
+        e.setAttribute("href", f);  
+        e.setAttribute("class", l);  
+        document.body.appendChild(e)  
+    }  
+   
+    function h() {  
+        var e = document.getElementsByClassName(l);  
+        for (var t = 0; t < e.length; t++) {  
+            document.body.removeChild(e[t])  
+        }  
+    }  
+   
+    function p() {  
+        var e = document.createElement("div");  
+        e.setAttribute("class", a);  
+        document.body.appendChild(e);  
+        setTimeout(function() {  
+            document.body.removeChild(e)  
+        }, 100)  
+    }  
+   
+    function d(e) {  
+        return {  
+            height : e.offsetHeight,  
+            width : e.offsetWidth  
+        }  
+    }  
+   
+    function v(i) {  
+        var s = d(i);  
+        return s.height > e && s.height < n && s.width > t && s.width < r  
+    }  
+   
+    function m(e) {  
+        var t = e;  
+        var n = 0;  
+        while (!!t) {  
+            n += t.offsetTop;  
+            t = t.offsetParent  
+        }  
+        return n  
+    }  
+   
+    function g() {  
+        var e = document.documentElement;  
+        if (!!window.innerWidth) {  
+            return window.innerHeight  
+        } else if (e && !isNaN(e.clientHeight)) {  
+            return e.clientHeight  
+        }  
+        return 0  
+    }  
+   
+    function y() {  
+        if (window.pageYOffset) {  
+            return window.pageYOffset  
+        }  
+        return Math.max(document.documentElement.scrollTop, document.body.scrollTop)  
+    }  
+   
+    function E(e) {  
+        var t = m(e);  
+        return t >= w && t <= b + w  
+    }  
+   
+    function S() {  
+        var e = document.createElement("audio");  
+        e.setAttribute("class", l);  
+        e.src = i;  
+        e.loop = false;  
+        e.addEventListener("canplay", function() {  
+            setTimeout(function() {  
+                x(k)  
+            }, 500);  
+            setTimeout(function() {  
+                N();  
+                p();  
+                for (var e = 0; e < O.length; e++) {  
+                    T(O[e])  
+                }  
+            }, 14000)  
+        }, true);  
+        e.addEventListener("ended", function() {  
+            N();  
+            h()  
+        }, true);  
+        e.innerHTML = " <p>If you are reading this, it is because your browser does not support the audio element. We recommend that you get a new browser.</p> <p>";  
+        document.body.appendChild(e);  
+        e.play()  
+    }  
+   
+    function x(e) {  
+        e.className += " " + s + " " + o  
+    }  
+   
+    function T(e) {  
+        e.className += " " + s + " " + u[Math.floor(Math.random() * u.length)]  
+    }  
+   
+    function N() {  
+        var e = document.getElementsByClassName(s);  
+        var t = new RegExp("\\b" + s + "\\b");  
+        for (var n = 0; n < e.length; ) {  
+            e[n].className = e[n].className.replace(t, "")  
+        }  
+    }  
+   
+    var e = 30;  
+    var t = 30;  
+    var n = 350;  
+    var r = 350;  
+    var i = "/mp3/zouqilai.mp3"; 
+    var s = "mw-harlem_shake_me";  
+    var o = "im_first";  
+    var u = ["im_drunk", "im_baked", "im_trippin", "im_blown"];  
+    var a = "mw-strobe_light";  
+    var f = "/css/harlem-shake-style.css";  
+    var l = "mw_added_css";  
+    var b = g();  
+    var w = y();  
+    var C = document.getElementsByTagName("*");  
+    var k = null;  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            if (E(A)) {  
+                k = A;  
+                break  
+            }  
+        }  
+    }  
+    if (A === null) {  
+        console.warn("Could not find a node of the right size. Please try a different page.");  
+        return  
+    }  
+    c();  
+    S();  
+    var O = [];  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            O.push(A)  
+        }  
+    }  
+})()    '>奏起来</a></li>
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:lwn.me">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/12/android-pluginmanager-source-code-analysis-4/" title="Android PluginManager 源码解析4--ActivityOverider" itemprop="url">Android PluginManager 源码解析4--ActivityOverider</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-12T10:11:29.000Z" itemprop="datePublished"> 发表于 2015-08-12</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityOverider概述"><span class="toc-number">1.</span> <span class="toc-text">ActivityOverider概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#overrideStartActivityForResult方法解析"><span class="toc-number">2.</span> <span class="toc-text">overrideStartActivityForResult方法解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#启动明确指定类名的Activity"><span class="toc-number">2.1.</span> <span class="toc-text">启动明确指定类名的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#启动有具体Action的Activity"><span class="toc-number">2.2.</span> <span class="toc-text">启动有具体Action的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#偷天换日，修改Intent"><span class="toc-number">2.3.</span> <span class="toc-text">偷天换日，修改Intent</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#动态生成PluginActivity"><span class="toc-number">3.</span> <span class="toc-text">动态生成PluginActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Activity生命周期回调"><span class="toc-number">4.</span> <span class="toc-text">Activity生命周期回调</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#overrideAttachBaseContext()"><span class="toc-number">4.1.</span> <span class="toc-text">overrideAttachBaseContext()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#callback_onCreate()"><span class="toc-number">4.2.</span> <span class="toc-text">callback_onCreate()</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<h2 id="ActivityOverider概述">ActivityOverider概述</h2><p><code>ActivityOverider</code>负责与动态生成的<code>PluginActivity</code>交互。</p>
+<p><code>ActivityOverider</code>主要干了3件事：</p>
+<ul>
+<li>修正StartActivity的Intent</li>
+<li>动态生成<code>PluginActivity</code>的Dex文件</li>
+<li>处理<code>PluginActivity</code>生命周期的回调，根据需要做一些特殊处理</li>
+</ul>
+<h2 id="overrideStartActivityForResult方法解析">overrideStartActivityForResult方法解析</h2><p>由于插件内的Activity没有在<code>AndroidManifest.xml</code>中注册，只注册了<code>androidx.pluginmgr.PluginActivity</code>，当通过<code>Context.startActivtiyForResult()</code>调起目标Activity时会找不到，所以需要对系统的<code>Context.startActivtiyForResult()</code>进行劫持，把要启动的Activity指向<code>androidx.pluginmgr.PluginActivity</code>，当加载<code>PluginActivity</code>时，通过<code>FrameworkClassLoader.loadClass()</code>方法再把类的加载路径修正回目标Activity，对系统进行了一个瞒天过海，骗过单纯的系统，哈哈。</p>
+<p>startActivity可能启动的是插件内部的Activity，也可能是宿主的Activity，也可能是其它插件的Activity，这一切都交由<code>overrideStartActivityForResult()</code>方法处理。</p>
+<a id="more"></a>
+<ul>
+<li><h3 id="启动明确指定类名的Activity">启动明确指定类名的Activity</h3></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">		</span><br><span class="line"><span class="comment">// 取出ComponentName</span></span><br><span class="line">ComponentName compname = intent.getComponent();</span><br><span class="line"><span class="comment">// 取包名</span></span><br><span class="line">String pkg = compname.getPackageName();</span><br><span class="line"><span class="comment">// 取Activity类名</span></span><br><span class="line">String toActName = compname.getClassName();</span><br><span class="line"><span class="comment">// 根据插件id取缓存PluginInfo</span></span><br><span class="line">PlugInfo thisPlugin = mgr.getPluginById(pluginId);</span><br><span class="line">ActivityInfo actInThisApk = <span class="keyword">null</span>;</span><br><span class="line">PlugInfo plug = thisPlugin;</span><br><span class="line"><span class="keyword">if</span> (pkg != <span class="keyword">null</span>) &#123;</span><br><span class="line">	<span class="comment">// 启动同一插件内的Activity</span></span><br><span class="line">	<span class="keyword">if</span> (pkg.equals(thisPlugin.getPackageName())) &#123;</span><br><span class="line">		actInThisApk = thisPlugin</span><br><span class="line">				.findActivityByClassName(toActName);</span><br><span class="line">	<span class="comment">// 启动另一插件内的Activity</span></span><br><span class="line">	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		PlugInfo otherPlug = mgr.getPluginByPackageName(pkg);</span><br><span class="line">		<span class="keyword">if</span> (otherPlug != <span class="keyword">null</span>) &#123;</span><br><span class="line">			plug = otherPlug;</span><br><span class="line">			actInThisApk = otherPlug</span><br><span class="line">					.findActivityByClassName(toActName);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	<span class="comment">// 容错处理，启动同一插件内的Activity</span></span><br><span class="line">	actInThisApk = thisPlugin.findActivityByClassName(toActName);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">setPluginIntent(intent, plug, actInThisApk.name);</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="启动有具体Action的Activity">启动有具体Action的Activity</h3></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">String action = intent.getAction();</span><br><span class="line">PlugInfo thisPlugin = mgr.getPluginById(pluginId);</span><br><span class="line">ActivityInfo actInThisApk = thisPlugin.findActivityByAction(action);</span><br><span class="line">			</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">setPluginIntent(intent, thisPlugin, actInThisApk.name);</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h3 id="偷天换日，修改Intent">偷天换日，修改Intent</h3></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setPluginIntent</span><span class="params">(Intent intent, PlugInfo plugin,</span><br><span class="line">			String actName)</span> </span>&#123;</span><br><span class="line">	PluginManager mgr = PluginManager.getInstance();</span><br><span class="line">	String pluginId = plugin.getId();</span><br><span class="line">	<span class="comment">// 根据类名动态生成新的PluginActivity</span></span><br><span class="line">	createProxyDex(plugin, actName);</span><br><span class="line">	<span class="comment">// 修改Intent中的ComponentName，将其指向androidx.pluginmgr.PluginActivity</span></span><br><span class="line">	String act = mgr.getFrameworkClassLoader().newActivityClassName(</span><br><span class="line">				pluginId, actName);</span><br><span class="line">	ComponentName compname = <span class="keyword">new</span> ComponentName(mgr.getContext(), act);</span><br><span class="line">	intent.setComponent(compname);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="动态生成PluginActivity">动态生成PluginActivity</h2><p>通过<code>createProxyDex()</code>为要加载的Activity生成代理类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	String pkgName = plugin.getPackageName();</span><br><span class="line">	ActivityClassGenerator.createActivityDex(activity, targetClassName,</span><br><span class="line">			saveDir, plugin.getId(), pkgName);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">	Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>具体生成机制委托给<code>ActivityClassGenerator</code>实现，后面再分析。</p>
+<h2 id="Activity生命周期回调">Activity生命周期回调</h2><p><code>PluginActivity</code>的一些生命周期方法会回调到<code>ActivityOverider</code>里。</p>
+<p>比较重要的几个有<code>overrideAttachBaseContext()</code>，<code>callback_onCreate()</code></p>
+<p>先看<code>overrideAttachBaseContext()</code>。</p>
+<h3 id="overrideAttachBaseContext()">overrideAttachBaseContext()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PlugInfo plugin = PluginManager.getInstance().getPluginById(pluginId);</span><br><span class="line"><span class="keyword">if</span> (plugin.getApplication() == <span class="keyword">null</span>) &#123;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		PluginManager.getInstance().initPluginApplication(plugin,</span><br><span class="line">				<span class="keyword">null</span>);</span><br><span class="line">	&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">		Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">PluginActivityWrapper actWrapper = <span class="keyword">new</span> PluginActivityWrapper(base, plugin.appWrapper, plugin);</span><br><span class="line"><span class="keyword">return</span> <span class="keyword">new</span> Object[] &#123; actWrapper, plugin.getAssetManager() &#125;;</span><br></pre></td></tr></table></figure>
+<p><code>overrideAttachBaseContext()</code>方法是为了更改Activity中的Context，把默认宿主的Context替换为修改过后的插件Context。</p>
+<p>由于Activity是继承自<code>ContextThemeWrapper</code>，而Application是继承<code>ContextWrapper</code>，所以这里不能直接使用<code>PluginContextWrapper</code>，而是把在Application初始化时生成的<code>PluginContextWrapper</code>注入继承自<code>ContextThemeWrapper</code>的<code>PluginActivityWrapper</code>。</p>
+<p>这样插件Application的Context与插件Activity的Context便在行为上一致了。</p>
+<p>接着来看<code>callback_onCreate()</code>。</p>
+<h3 id="callback_onCreate()">callback_onCreate()</h3><ul>
+<li><code>callback_onCreate()</code>先替换了Activity的Application。</li>
+</ul>
+<p>因为<code>PluginActivity</code>实际还是在宿主中调起的，所以默认的Context、Application都是宿主的。既然Context已经替换了，那Application也不能漏掉。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">		</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	Field applicationField = Activity.class</span><br><span class="line">			.getDeclaredField(<span class="string">"mApplication"</span>);</span><br><span class="line">	applicationField.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">	applicationField.set(fromAct, plugin.getApplication());</span><br><span class="line">&#125;  <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">	e.printStackTrace();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li>处理activity的主题</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">		</span><br><span class="line"><span class="comment">// PluginActivity是动态生成并继承与原来的Activity，所以此处需要取supperClass的name</span></span><br><span class="line">String actName = fromAct.getClass().getSuperclass().getName();</span><br><span class="line"><span class="comment">// 从通过PluginManifestUtil解析的Activity list中查找当前Activity的ActivityInfo</span></span><br><span class="line">ActivityInfo actInfo = plugin.findActivityByClassName(actName);</span><br><span class="line"><span class="keyword">int</span> resTheme = actInfo.getThemeResource();</span><br><span class="line"><span class="comment">// 如果使用了主题</span></span><br><span class="line"><span class="keyword">if</span> (resTheme != <span class="number">0</span>) &#123;</span><br><span class="line">	<span class="keyword">boolean</span> hasNotSetTheme = <span class="keyword">true</span>;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		Field mTheme = ContextThemeWrapper.class</span><br><span class="line">				.getDeclaredField(<span class="string">"mTheme"</span>);</span><br><span class="line">		mTheme.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">		<span class="comment">// 判断PluginActivity的mTheme字段是否为空，为空表示没有设置过主题</span></span><br><span class="line">		hasNotSetTheme = mTheme.get(fromAct) == <span class="keyword">null</span>;</span><br><span class="line">	&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">		e.printStackTrace();</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (hasNotSetTheme) &#123;</span><br><span class="line">		<span class="comment">// 替换PluginActivity的mActivityInfo</span></span><br><span class="line">		changeActivityInfo(fromAct);</span><br><span class="line">		fromAct.setTheme(resTheme);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>这里为何在设置了主题后才替换mActivityInfo，暂时还没有看懂。</p>
+<ul>
+<li>替换PluginActivity的mActivityInfo</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">Field field_mActivityInfo=<span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	field_mActivityInfo = Activity.class.getDeclaredField(<span class="string">"mActivityInfo"</span>);</span><br><span class="line">	field_mActivityInfo.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">&#125;  <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">	Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line">PluginManager con = PluginManager.getInstance();</span><br><span class="line">PlugInfo plugin = con.getPluginByPackageName(activity.getPackageName());</span><br><span class="line"></span><br><span class="line">ActivityInfo actInfo = plugin.findActivityByClassName(actName);</span><br><span class="line">actInfo.applicationInfo = plugin.getPackageInfo().applicationInfo;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	field_mActivityInfo.set(activity, actInfo);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">	Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li>处理回调</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PluginActivityLifeCycleCallback callback = PluginManager.getInstance()</span><br><span class="line">		.getPluginActivityLifeCycleCallback();</span><br><span class="line"><span class="keyword">if</span> (callback != <span class="keyword">null</span>) &#123;</span><br><span class="line">	callback.onCreate(pluginId, fromAct);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果注册了<code>PluginActivityLifeCycleCallback</code>，会在相应的生命周期内触发回调。</p>
+<p>剩下一些其他的生命周期没有做额外的处理，只是处理了<code>PluginActivityLifeCycleCallback</code>回调，就略过了。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/ContextWrapper/">ContextWrapper</a><a href="/tags/PluginActivity/">PluginActivity</a><a href="/tags/插件/">插件</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://lwn.me/2015/08/12/android-pluginmanager-source-code-analysis-4/" data-title="Android PluginManager 源码解析4--ActivityOverider | Fatter&#39;s Blog" data-tsina="2807580682" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2015/08/11/android-pluginmanager-source-code-analysis-3/"  title="Android PluginManager 源码解析3--PluginManifestUtil">
+ <strong>下一篇：</strong><br/> 
+ <span>Android PluginManager 源码解析3--PluginManifestUtil
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityOverider概述"><span class="toc-number">1.</span> <span class="toc-text">ActivityOverider概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#overrideStartActivityForResult方法解析"><span class="toc-number">2.</span> <span class="toc-text">overrideStartActivityForResult方法解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#启动明确指定类名的Activity"><span class="toc-number">2.1.</span> <span class="toc-text">启动明确指定类名的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#启动有具体Action的Activity"><span class="toc-number">2.2.</span> <span class="toc-text">启动有具体Action的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#偷天换日，修改Intent"><span class="toc-number">2.3.</span> <span class="toc-text">偷天换日，修改Intent</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#动态生成PluginActivity"><span class="toc-number">3.</span> <span class="toc-text">动态生成PluginActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Activity生命周期回调"><span class="toc-number">4.</span> <span class="toc-text">Activity生命周期回调</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#overrideAttachBaseContext()"><span class="toc-number">4.1.</span> <span class="toc-text">overrideAttachBaseContext()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#callback_onCreate()"><span class="toc-number">4.2.</span> <span class="toc-text">callback_onCreate()</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>2</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/插件/" title="插件">插件<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/bitmap/" title="bitmap">bitmap<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ClassLoader/" title="ClassLoader">ClassLoader<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vo/" title="vo">vo<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/反射/" title="反射">反射<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/抓包/" title="抓包">抓包<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/drawable/" title="drawable">drawable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/paint/" title="paint">paint<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/PluginActivity/" title="PluginActivity">PluginActivity<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ContextWrapper/" title="ContextWrapper">ContextWrapper<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/PackageManager/" title="PackageManager">PackageManager<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/androidManifest/" title="androidManifest">androidManifest<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.trinea.cn/" target="_blank" title="Trinea&#39;s Blog">Trinea&#39;s Blog</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://codekk.com/open-source-project-analysis" target="_blank" title="Codekk">Codekk</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/Trinea/android-open-project" target="_blank" title="android-open-project">android-open-project</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://asce1885.gitbooks.io/android-rd-senior-advanced/content/" target="_blank" title="android-rd-senior-advanced">android-rd-senior-advanced</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello, I&#39;m Fatter in Google. <br/>
+			This is my blog, believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/fatterx" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/fatterx" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:lwn888@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2015 
+		
+		<a href="/about" target="_blank" title="Fatter">Fatter</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'fatterx';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-48995178-1', 'lwn.me');  
+ga('send', 'pageview');
+</script>
+
+
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
