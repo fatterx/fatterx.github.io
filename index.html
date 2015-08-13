@@ -233,6 +233,72 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2015/08/13/android-pluginmanager-source-code-analysis-5/" title="Android PluginManager 源码解析5--ActivityClassGenerator" itemprop="url">Android PluginManager 源码解析5--ActivityClassGenerator</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-13T10:11:29.000Z" itemprop="datePublished"> 发表于 2015-08-13</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="ActivityClassGenerator简介">ActivityClassGenerator简介</h2><p><code>ActivityClassGenerator</code>是体现<strong>Activity PluginManager</strong>插件sdk思路独特的地方。<code>ActivityClassGenerator</code>使用<a href="https://github.com/crittercism/dexmaker">DexMaker</a>动态生成<code>PluginActivity</code>，这个<code>PluginActivty</code>继承于插件中的源Activity，在生成时重载了源Activity的一些方法，替换了Activity的Context、AssetManager，从而实现不修改原插件apk的情况下实现动态加载apk的能力。</p>
+<p>在生成dex文件时，当API &lt; 11 用jar代替。</p>
+<h2 id="定义PluginActivty类">定义<code>PluginActivty</code>类</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">DexMaker dexMaker = <span class="keyword">new</span> DexMaker();</span><br><span class="line"><span class="comment">// dexmaker使用类似于JNI的字段描述符</span></span><br><span class="line"><span class="comment">// 在Android PluginManger里，其实generatedType始终为 Landroidx/pluginmgr/PluginActivity</span></span><br><span class="line">TypeId&lt;D&gt; generatedType = TypeId.get(<span class="string">'L'</span> + targetClassName.replace(<span class="string">'.'</span>,</span><br><span class="line">		<span class="string">'/'</span>) + <span class="string">';'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// superType是Activity原来的类名</span></span><br><span class="line">TypeId&lt;S&gt; superType = TypeId</span><br><span class="line">		.get(<span class="string">'L'</span> + superClassName.replace(<span class="string">'.'</span>, <span class="string">'/'</span>) + <span class="string">';'</span>);</span><br><span class="line"><span class="comment">// 定义PluginActivity类，继承源Activity</span></span><br><span class="line">dexMaker.declare(generatedType, <span class="string">""</span>, PUBLIC | FINAL, superType);</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2015/08/13/android-pluginmanager-source-code-analysis-5/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/DexMaker/">DexMaker</a><a href="/tags/PluginActivity/">PluginActivity</a><a href="/tags/插件/">插件</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2015/08/13/android-pluginmanager-source-code-analysis-5/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2015/08/12/android-pluginmanager-source-code-analysis-4/" title="Android PluginManager 源码解析4--ActivityOverider" itemprop="url">Android PluginManager 源码解析4--ActivityOverider</a>
   </h1>
   <p class="article-author">By
@@ -246,15 +312,16 @@
 </header>
     <div class="article-content">
         
-        <h2 id="ActivityOverider概述">ActivityOverider概述</h2><p><code>ActivityOverider</code>负责与动态生成的<code>PluginActivity</code>交互。</p>
+        <h2 id="ActivityOverider概述">ActivityOverider概述</h2><p><code>ActivityOverider</code>负责生成<code>PluginActivity</code>，并与<code>PluginActivity</code>交互，处理<code>PluginActivity</code>的回调。</p>
 <p><code>ActivityOverider</code>主要干了3件事：</p>
 <ul>
-<li>修正StartActivity的Intent</li>
 <li>动态生成<code>PluginActivity</code>的Dex文件</li>
+<li>修正StartActivity的Intent</li>
 <li>处理<code>PluginActivity</code>生命周期的回调，根据需要做一些特殊处理</li>
 </ul>
-<h2 id="overrideStartActivityForResult方法解析">overrideStartActivityForResult方法解析</h2><p>由于插件内的Activity没有在<code>AndroidManifest.xml</code>中注册，只注册了<code>androidx.pluginmgr.PluginActivity</code>，当通过<code>Context.startActivtiyForResult()</code>调起目标Activity时会找不到，所以需要对系统的<code>Context.startActivtiyForResult()</code>进行劫持，把要启动的Activity指向<code>androidx.pluginmgr.PluginActivity</code>，当加载<code>PluginActivity</code>时，通过<code>FrameworkClassLoader.loadClass()</code>方法再把类的加载路径修正回目标Activity，对系统进行了一个瞒天过海，骗过单纯的系统，哈哈。</p>
-<p>startActivity可能启动的是插件内部的Activity，也可能是宿主的Activity，也可能是其它插件的Activity，这一切都交由<code>overrideStartActivityForResult()</code>方法处理。</p>
+<h2 id="动态生成PluginActivity">动态生成PluginActivity</h2><p>通过<code>createProxyDex()</code>为要加载的Activity生成代理类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	String pkgName = plugin.getPackageName();</span><br><span class="line">	ActivityClassGenerator.createActivityDex(activity, targetClassName,</span><br><span class="line">			saveDir, plugin.getId(), pkgName);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">	Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>具体生成机制委托给<code>ActivityClassGenerator</code>实现，<a href="2015/08/13/android-pluginmanager-source-code-analysis-5/">具体分析见下篇</a>。</p>
         
         
         <p class="article-more-link">
@@ -516,76 +583,6 @@
 
 
 
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2014/11/02/javascript-vo-closure-scopechain/" title="图解javascript中的变量对象、闭包、作用域链机理" itemprop="url">图解javascript中的变量对象、闭包、作用域链机理</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
-		
-  <p class="article-time">
-    <time datetime="2014-11-01T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-11-02</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h2 id="什么是闭包">什么是闭包</h2><p><strong>javascript</strong>中的<strong>闭包</strong>是一个强大而灵活的武器，搞清<strong>闭包</strong>，<strong>作用域链</strong>的作用机理，能让我更好的将<strong>闭包</strong>运用在我们的项目中。</p>
-<p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures">mozilla开发者中心的定义：</a></p>
-<blockquote>
-<p>Closures are functions that refer to independent (free) variables. </p>
-<p>In other words, the function defined in the closure ‘remembers’ the environment in which it was created. </p>
-</blockquote>
-<p>我理解的<strong>闭包</strong>是一个<strong>function</strong>，并且具有访问不在<strong>function</strong>内部定义的变量的能力，如嵌套<strong>function</strong>中的子<strong>function</strong>可以访问到定义在父<strong>function</strong>中的变量，是一类语言（如<strong>js</strong>）的特性。</p>
-        
-        
-        <p class="article-more-link">
-          
-            <a href="/2014/11/02/javascript-vo-closure-scopechain/#more">Read More</a>
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-<div class="article-categories">
-  <span></span>
-  <a class="article-category-link" href="/categories/javascript/">javascript</a>
-</div>
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/closure/">closure</a><a href="/tags/scopechain/">scopechain</a><a href="/tags/vo/">vo</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2014/11/02/javascript-vo-closure-scopechain/#disqus_thread" class="comments-count-link">Comments</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
 
   <nav id="page-nav" class="clearfix">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next<span></span></a>
@@ -604,7 +601,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>9</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>10</sup></a></li>
 		  
 		
 		  
@@ -621,7 +618,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/插件/" title="插件">插件<sup>4</sup></a></li>
+				<li><a href="/tags/插件/" title="插件">插件<sup>5</sup></a></li>
 			
 		
 			
@@ -637,6 +634,10 @@
 			
 		
 			
+				<li><a href="/tags/PluginActivity/" title="PluginActivity">PluginActivity<sup>2</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/反射/" title="反射">反射<sup>2</sup></a></li>
 			
 		
@@ -645,15 +646,11 @@
 			
 		
 			
-				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
+				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
 			
 		
 			
@@ -665,11 +662,11 @@
 			
 		
 			
-				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
+				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
 			
 		
 			
@@ -681,11 +678,15 @@
 			
 		
 			
-				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
+				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/PluginActivity/" title="PluginActivity">PluginActivity<sup>1</sup></a></li>
+				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DexMaker/" title="DexMaker">DexMaker<sup>1</sup></a></li>
 			
 		
 			
@@ -694,10 +695,6 @@
 		
 			
 				<li><a href="/tags/PackageManager/" title="PackageManager">PackageManager<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/androidManifest/" title="androidManifest">androidManifest<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -902,6 +899,11 @@ ga('send', 'pageview');
 </script>
 
 
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3F0c54a9784fe703965b5dd3fe168d12f3' type='text/javascript'%3E%3C/script%3E"));
+</script>
 
 
 

@@ -233,6 +233,76 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2014/04/11/bitmap/" title="Android Bitmap的一点研究" itemprop="url">Android Bitmap的一点研究</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2014-04-10T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-04-11</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>android中的<strong>Bitmap</strong>与其他对象不同，不能通过<code>new Bitmap()</code>直接实例化.</p>
+<p>查看源码，<strong>Bitmap</strong>的构造函数是<em>default</em>的，仅包内可见，实际是供<strong>native</strong>方法调用的。</p>
+<p><strong>Bitmap</strong>中实际保存数据的地方在<strong>native</strong>层，<strong>java</strong>层仅对<strong>native</strong>层方法进行封装、重载，</p>
+<p>并提供一些状态的判断方法、属性的<code>set</code>、<code>get</code>方法。</p>
+<p><strong>Bitmap</strong>有<code>mNativaBitmap</code>属性，用来保存<code>nativeBitmap</code>的地址。</p>
+<p><code>mNativeBitmap</code>的地址在构造<strong>Bitmap</strong>时，由<strong>native</strong>方法直接传递进来。</p>
+<p>####所以整个<strong>Bitmap</strong>可以认为在<strong>java</strong>层基本不怎么占内存，大部分内存占用都是在<strong>native</strong>层。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2014/04/11/bitmap/#more">Read More</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/bitmap/">bitmap</a><a href="/tags/canvas/">canvas</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2014/04/11/bitmap/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2014/03/21/how-to-view-network-requests-on-android/" title="如何在android上抓包" itemprop="url">如何在android上抓包</a>
   </h1>
   <p class="article-author">By
@@ -321,7 +391,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>9</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>10</sup></a></li>
 		  
 		
 		  
@@ -338,7 +408,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/插件/" title="插件">插件<sup>4</sup></a></li>
+				<li><a href="/tags/插件/" title="插件">插件<sup>5</sup></a></li>
 			
 		
 			
@@ -354,6 +424,10 @@
 			
 		
 			
+				<li><a href="/tags/PluginActivity/" title="PluginActivity">PluginActivity<sup>2</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/反射/" title="反射">反射<sup>2</sup></a></li>
 			
 		
@@ -362,15 +436,11 @@
 			
 		
 			
-				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
+				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
 			
 		
 			
@@ -382,11 +452,11 @@
 			
 		
 			
-				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
+				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
 			
 		
 			
@@ -398,11 +468,15 @@
 			
 		
 			
-				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
+				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/PluginActivity/" title="PluginActivity">PluginActivity<sup>1</sup></a></li>
+				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DexMaker/" title="DexMaker">DexMaker<sup>1</sup></a></li>
 			
 		
 			
@@ -411,10 +485,6 @@
 		
 			
 				<li><a href="/tags/PackageManager/" title="PackageManager">PackageManager<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/androidManifest/" title="androidManifest">androidManifest<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -619,6 +689,11 @@ ga('send', 'pageview');
 </script>
 
 
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3F0c54a9784fe703965b5dd3fe168d12f3' type='text/javascript'%3E%3C/script%3E"));
+</script>
 
 
 

@@ -1,0 +1,788 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Android PluginManager 源码解析5--ActivityClassGenerator | Fatter&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Fatter">
+    
+
+    
+    <meta name="description" content="ActivityClassGenerator简介ActivityClassGenerator是体现Activity PluginManager插件sdk思路独特的地方。ActivityClassGenerator使用DexMaker动态生成PluginActivity，这个PluginActivty继承于插件中的源Activity，在生成时重载了源Activity的一些方法，替换了Activity">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android PluginManager 源码解析5--ActivityClassGenerator">
+<meta property="og:url" content="http://lwn.me/2015/08/13/android-pluginmanager-source-code-analysis-5/index.html">
+<meta property="og:site_name" content="Fatter's Blog">
+<meta property="og:description" content="ActivityClassGenerator简介ActivityClassGenerator是体现Activity PluginManager插件sdk思路独特的地方。ActivityClassGenerator使用DexMaker动态生成PluginActivity，这个PluginActivty继承于插件中的源Activity，在生成时重载了源Activity的一些方法，替换了Activity">
+<meta property="og:updated_time" content="2015-08-13T10:52:32.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android PluginManager 源码解析5--ActivityClassGenerator">
+<meta name="twitter:description" content="ActivityClassGenerator简介ActivityClassGenerator是体现Activity PluginManager插件sdk思路独特的地方。ActivityClassGenerator使用DexMaker动态生成PluginActivity，这个PluginActivty继承于插件中的源Activity，在生成时重载了源Activity的一些方法，替换了Activity">
+
+    
+    <link rel="alternative" href="/atom.xml" title="Fatter&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="Fatter&#39;s Blog" title="Fatter&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Fatter&#39;s Blog">Fatter&#39;s Blog</a></h1>
+				<h2 class="blog-motto">让我们忠于理想，让我们面对现实</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/lab">实验室</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+						<li><a href='javascript:(function() {  
+    function c() {  
+        var e = document.createElement("link");  
+        e.setAttribute("type", "text/css");  
+        e.setAttribute("rel", "stylesheet");  
+        e.setAttribute("href", f);  
+        e.setAttribute("class", l);  
+        document.body.appendChild(e)  
+    }  
+   
+    function h() {  
+        var e = document.getElementsByClassName(l);  
+        for (var t = 0; t < e.length; t++) {  
+            document.body.removeChild(e[t])  
+        }  
+    }  
+   
+    function p() {  
+        var e = document.createElement("div");  
+        e.setAttribute("class", a);  
+        document.body.appendChild(e);  
+        setTimeout(function() {  
+            document.body.removeChild(e)  
+        }, 100)  
+    }  
+   
+    function d(e) {  
+        return {  
+            height : e.offsetHeight,  
+            width : e.offsetWidth  
+        }  
+    }  
+   
+    function v(i) {  
+        var s = d(i);  
+        return s.height > e && s.height < n && s.width > t && s.width < r  
+    }  
+   
+    function m(e) {  
+        var t = e;  
+        var n = 0;  
+        while (!!t) {  
+            n += t.offsetTop;  
+            t = t.offsetParent  
+        }  
+        return n  
+    }  
+   
+    function g() {  
+        var e = document.documentElement;  
+        if (!!window.innerWidth) {  
+            return window.innerHeight  
+        } else if (e && !isNaN(e.clientHeight)) {  
+            return e.clientHeight  
+        }  
+        return 0  
+    }  
+   
+    function y() {  
+        if (window.pageYOffset) {  
+            return window.pageYOffset  
+        }  
+        return Math.max(document.documentElement.scrollTop, document.body.scrollTop)  
+    }  
+   
+    function E(e) {  
+        var t = m(e);  
+        return t >= w && t <= b + w  
+    }  
+   
+    function S() {  
+        var e = document.createElement("audio");  
+        e.setAttribute("class", l);  
+        e.src = i;  
+        e.loop = false;  
+        e.addEventListener("canplay", function() {  
+            setTimeout(function() {  
+                x(k)  
+            }, 500);  
+            setTimeout(function() {  
+                N();  
+                p();  
+                for (var e = 0; e < O.length; e++) {  
+                    T(O[e])  
+                }  
+            }, 14000)  
+        }, true);  
+        e.addEventListener("ended", function() {  
+            N();  
+            h()  
+        }, true);  
+        e.innerHTML = " <p>If you are reading this, it is because your browser does not support the audio element. We recommend that you get a new browser.</p> <p>";  
+        document.body.appendChild(e);  
+        e.play()  
+    }  
+   
+    function x(e) {  
+        e.className += " " + s + " " + o  
+    }  
+   
+    function T(e) {  
+        e.className += " " + s + " " + u[Math.floor(Math.random() * u.length)]  
+    }  
+   
+    function N() {  
+        var e = document.getElementsByClassName(s);  
+        var t = new RegExp("\\b" + s + "\\b");  
+        for (var n = 0; n < e.length; ) {  
+            e[n].className = e[n].className.replace(t, "")  
+        }  
+    }  
+   
+    var e = 30;  
+    var t = 30;  
+    var n = 350;  
+    var r = 350;  
+    var i = "/mp3/zouqilai.mp3"; 
+    var s = "mw-harlem_shake_me";  
+    var o = "im_first";  
+    var u = ["im_drunk", "im_baked", "im_trippin", "im_blown"];  
+    var a = "mw-strobe_light";  
+    var f = "/css/harlem-shake-style.css";  
+    var l = "mw_added_css";  
+    var b = g();  
+    var w = y();  
+    var C = document.getElementsByTagName("*");  
+    var k = null;  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            if (E(A)) {  
+                k = A;  
+                break  
+            }  
+        }  
+    }  
+    if (A === null) {  
+        console.warn("Could not find a node of the right size. Please try a different page.");  
+        return  
+    }  
+    c();  
+    S();  
+    var O = [];  
+    for (var L = 0; L < C.length; L++) {  
+        var A = C[L];  
+        if (v(A)) {  
+            O.push(A)  
+        }  
+    }  
+})()    '>奏起来</a></li>
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:lwn.me">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/08/13/android-pluginmanager-source-code-analysis-5/" title="Android PluginManager 源码解析5--ActivityClassGenerator" itemprop="url">Android PluginManager 源码解析5--ActivityClassGenerator</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Fatter" target="_blank" itemprop="author">Fatter</a>
+		
+  <p class="article-time">
+    <time datetime="2015-08-13T10:11:29.000Z" itemprop="datePublished"> 发表于 2015-08-13</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityClassGenerator简介"><span class="toc-number">1.</span> <span class="toc-text">ActivityClassGenerator简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#定义PluginActivty类"><span class="toc-number">2.</span> <span class="toc-text">定义PluginActivty类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#添加自定义字段"><span class="toc-number">3.</span> <span class="toc-text">添加自定义字段</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#生成构造函数"><span class="toc-number">4.</span> <span class="toc-text">生成构造函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载attachBaseContext()"><span class="toc-number">5.</span> <span class="toc-text">重载attachBaseContext()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载onCreate()等生命周期方法"><span class="toc-number">6.</span> <span class="toc-text">重载onCreate()等生命周期方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载getAssets()、getResources()"><span class="toc-number">7.</span> <span class="toc-text">重载getAssets()、getResources()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载startActivityForResult()"><span class="toc-number">8.</span> <span class="toc-text">重载startActivityForResult()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载其他方法"><span class="toc-number">9.</span> <span class="toc-text">重载其他方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">10.</span> <span class="toc-text">总结</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="ActivityClassGenerator简介">ActivityClassGenerator简介</h2><p><code>ActivityClassGenerator</code>是体现<strong>Activity PluginManager</strong>插件sdk思路独特的地方。<code>ActivityClassGenerator</code>使用<a href="https://github.com/crittercism/dexmaker" target="_blank" rel="external">DexMaker</a>动态生成<code>PluginActivity</code>，这个<code>PluginActivty</code>继承于插件中的源Activity，在生成时重载了源Activity的一些方法，替换了Activity的Context、AssetManager，从而实现不修改原插件apk的情况下实现动态加载apk的能力。</p>
+<p>在生成dex文件时，当API &lt; 11 用jar代替。</p>
+<h2 id="定义PluginActivty类">定义<code>PluginActivty</code>类</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">DexMaker dexMaker = <span class="keyword">new</span> DexMaker();</span><br><span class="line"><span class="comment">// dexmaker使用类似于JNI的字段描述符</span></span><br><span class="line"><span class="comment">// 在Android PluginManger里，其实generatedType始终为 Landroidx/pluginmgr/PluginActivity</span></span><br><span class="line">TypeId&lt;D&gt; generatedType = TypeId.get(<span class="string">'L'</span> + targetClassName.replace(<span class="string">'.'</span>,</span><br><span class="line">		<span class="string">'/'</span>) + <span class="string">';'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// superType是Activity原来的类名</span></span><br><span class="line">TypeId&lt;S&gt; superType = TypeId</span><br><span class="line">		.get(<span class="string">'L'</span> + superClassName.replace(<span class="string">'.'</span>, <span class="string">'/'</span>) + <span class="string">';'</span>);</span><br><span class="line"><span class="comment">// 定义PluginActivity类，继承源Activity</span></span><br><span class="line">dexMaker.declare(generatedType, <span class="string">""</span>, PUBLIC | FINAL, superType);</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>类定义好了，为<code>PluginActivity</code>添加些自定义的字段</p>
+<h2 id="添加自定义字段">添加自定义字段</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// &lt;==&gt; private static final String _pluginId = pluginId;</span></span><br><span class="line">FieldId&lt;D, String&gt; _pluginId = generatedType.getField(TypeId.STRING,</span><br><span class="line">		<span class="string">"_pluginId"</span>);</span><br><span class="line">dexMaker.declare(_pluginId, PRIVATE | STATIC | FINAL, pluginId);</span><br><span class="line"></span><br><span class="line"><span class="comment">// &lt;==&gt; private static final String _pkg = pkgName;</span></span><br><span class="line">FieldId&lt;D, String&gt; _pkg = generatedType.getField(TypeId.STRING,</span><br><span class="line">		<span class="string">"_pkg"</span>);</span><br><span class="line">dexMaker.declare(_pkg, PRIVATE | STATIC | FINAL, pkgName);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义AssetManager类</span></span><br><span class="line">TypeId&lt;AssetManager&gt; AssetManager = TypeId.get(AssetManager.class);</span><br><span class="line"><span class="comment">// 定义Resoures类</span></span><br><span class="line">TypeId&lt;Resources&gt; Resources = TypeId.get(Resources.class);</span><br><span class="line"></span><br><span class="line"><span class="comment">// &lt;==&gt; private AssetManager mAssertManager;</span></span><br><span class="line">FieldId&lt;D, AssetManager&gt; asm = generatedType.getField(AssetManager,</span><br><span class="line">		FIELD_ASSERTMANAGER);</span><br><span class="line">dexMaker.declare(asm, PRIVATE, <span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// &lt;==&gt; private Resources mResources;</span></span><br><span class="line">FieldId&lt;D, Resources&gt; res = generatedType.getField(Resources, FIELD_RESOURCES);</span><br><span class="line">dexMaker.declare(res, PRIVATE, <span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// &lt;==&gt; private boolean mOnCreated;</span></span><br><span class="line">FieldId&lt;D, Boolean&gt; beforeOnCreate = generatedType.getField(TypeId.BOOLEAN, FIELD_mOnCreated);</span><br><span class="line">dexMaker.declare(beforeOnCreate, PRIVATE, <span class="keyword">null</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="生成构造函数">生成构造函数</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">MethodId&lt;D, Void&gt; method = generatedType.getConstructor();</span><br><span class="line">Code constructorCode = dexMaker.declare(method, PUBLIC);</span><br><span class="line">Local&lt;D&gt; localThis = constructorCode.getThis(generatedType);</span><br><span class="line">MethodId&lt;S, Void&gt; superConstructor = superType.getConstructor();</span><br><span class="line">constructorCode.invokeDirect(superConstructor, <span class="keyword">null</span>, localThis);</span><br><span class="line">constructorCode.returnVoid();</span><br></pre></td></tr></table></figure>
+<p>翻译过来就是：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">PluginActivity</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="keyword">super</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="重载attachBaseContext()">重载attachBaseContext()</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">TypeId&lt;Context&gt; Context = TypeId.get(Context.class);</span><br><span class="line">TypeId&lt;AssetManager&gt; AssetManager = TypeId.get(AssetManager.class);</span><br><span class="line">TypeId&lt;Resources&gt; Resources = TypeId.get(Resources.class);</span><br><span class="line">FieldId&lt;D, AssetManager&gt; assertManager = generatedType.getField(AssetManager,</span><br><span class="line">		FIELD_ASSERTMANAGER);</span><br><span class="line">FieldId&lt;D, Resources&gt; resources = generatedType.getField(Resources, FIELD_RESOURCES);</span><br><span class="line">TypeId&lt;ActivityOverider&gt; ActivityOverider = TypeId</span><br><span class="line">		.get(ActivityOverider.class);</span><br><span class="line">TypeId&lt;DisplayMetrics&gt; DisplayMetrics = TypeId</span><br><span class="line">		.get(DisplayMetrics.class);</span><br><span class="line">TypeId&lt;Configuration&gt; Configuration = TypeId.get(Configuration.class);</span><br><span class="line"></span><br><span class="line">MethodId&lt;D, Void&gt; method = generatedType.getMethod(TypeId.VOID,</span><br><span class="line">		<span class="string">"attachBaseContext"</span>, Context);</span><br><span class="line">Code methodCode = dexMaker.declare(method, PROTECTED);</span><br><span class="line">TypeId&lt;Object[]&gt; ObjArr = TypeId.get(Object[].class);</span><br><span class="line"><span class="comment">// locals -- 一个方法内的本地变量必须提前声明在所有操作之前</span></span><br><span class="line">Local&lt;D&gt; localThis = methodCode.getThis(generatedType);</span><br><span class="line">Local&lt;Object[]&gt; rsArr = methodCode.newLocal(ObjArr);</span><br><span class="line">Local&lt;Object&gt; rsArr0 = methodCode.newLocal(TypeId.OBJECT);</span><br><span class="line">Local&lt;Object&gt; rsArr1 = methodCode.newLocal(TypeId.OBJECT);</span><br><span class="line">Local&lt;Context&gt; base = methodCode.getParameter(<span class="number">0</span>, Context);</span><br><span class="line">Local&lt;Context&gt; newbase = methodCode.newLocal(Context);</span><br><span class="line">Local&lt;Integer&gt; index0 = methodCode.newLocal(TypeId.INT);</span><br><span class="line">Local&lt;Integer&gt; index1 = methodCode.newLocal(TypeId.INT);</span><br><span class="line">Local&lt;AssetManager&gt; localAsm = methodCode.newLocal(AssetManager);</span><br><span class="line">Local&lt;Resources&gt; superRes = methodCode.newLocal(Resources);</span><br><span class="line">Local&lt;DisplayMetrics&gt; mtrc = methodCode.newLocal(DisplayMetrics);</span><br><span class="line">Local&lt;Configuration&gt; cfg = methodCode.newLocal(Configuration);</span><br><span class="line">Local&lt;Resources&gt; resLocal = methodCode.newLocal(Resources);</span><br><span class="line">Local&lt;String&gt; pluginId = get_pluginId(generatedType, methodCode);</span><br><span class="line">methodCode.loadConstant(index0, <span class="number">0</span>);</span><br><span class="line">methodCode.loadConstant(index1, <span class="number">1</span>);</span><br><span class="line"><span class="comment">// codes:</span></span><br><span class="line"><span class="comment">//  Object [] rs = ActivitiOverrider.overrideAttachBaseContext(_pluginId, activity, base);</span></span><br><span class="line">MethodId&lt;ActivityOverider, Object[]&gt; methodOverride = ActivityOverider.getMethod(ObjArr,</span><br><span class="line">		<span class="string">"overrideAttachBaseContext"</span>,TypeId.STRING,TypeId.get(Activity.class),Context);</span><br><span class="line">methodCode.invokeStatic(methodOverride, rsArr, pluginId,localThis,base);</span><br><span class="line">methodCode.aget(rsArr0, rsArr, index0);</span><br><span class="line">methodCode.aget(rsArr1, rsArr, index1);</span><br><span class="line">methodCode.cast(newbase, rsArr0);<span class="comment">// base = rs[0];</span></span><br><span class="line">methodCode.cast(localAsm, rsArr1);<span class="comment">// localAsm = rs[1];</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">methodCode.iput(assertManager, localThis, localAsm);</span><br><span class="line"><span class="comment">// superRes = base.getResources();</span></span><br><span class="line">MethodId&lt;Context, Resources&gt; methodGetResources = Context.getMethod(Resources,</span><br><span class="line">		<span class="string">"getResources"</span>);</span><br><span class="line">methodCode.invokeVirtual(methodGetResources, superRes, base);</span><br><span class="line"></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// superRes.getDisplayMetrics()</span></span><br><span class="line">MethodId&lt;Resources, DisplayMetrics&gt; getDisplayMetrics = Resources</span><br><span class="line">		.getMethod(DisplayMetrics, <span class="string">"getDisplayMetrics"</span>);</span><br><span class="line">methodCode.invokeVirtual(getDisplayMetrics, mtrc, superRes);</span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// superRes.getConfiguration()</span></span><br><span class="line">MethodId&lt;Resources, Configuration&gt; getConfiguration = Resources</span><br><span class="line">		.getMethod(Configuration, <span class="string">"getConfiguration"</span>);</span><br><span class="line">methodCode.invokeVirtual(getConfiguration, cfg, superRes);</span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// res = new Resources(asm, superRes.getDisplayMetrics(), superRes.getConfiguration());</span></span><br><span class="line"></span><br><span class="line">MethodId&lt;Resources, Void&gt; res_constructor = Resources.getConstructor(</span><br><span class="line">		AssetManager, DisplayMetrics, Configuration);</span><br><span class="line">methodCode.newInstance(resLocal, res_constructor, localAsm, mtrc, cfg);</span><br><span class="line">methodCode.iput(resources, localThis, resLocal);</span><br><span class="line"></span><br><span class="line">MethodId&lt;S, Void&gt; superMethod = superType.getMethod(TypeId.VOID,</span><br><span class="line">		<span class="string">"attachBaseContext"</span>, Context);</span><br><span class="line">methodCode.invokeSuper(superMethod, <span class="keyword">null</span>, localThis, newbase);</span><br><span class="line">methodCode.returnVoid();</span><br></pre></td></tr></table></figure>
+<p>用dexmaker写了那么一大堆，翻译成“人类”语言就几行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">attachBaseContext</span><span class="params">(Context context)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 交给overrideAttachBaseContext生成新的Context和AssetManager</span></span><br><span class="line">	Object[] obj = ActivitiOverrider.overrideAttachBaseContext(_pluginId, <span class="keyword">this</span>, context);</span><br><span class="line"></span><br><span class="line">	Context newContext = (Context) obj[<span class="number">0</span>];</span><br><span class="line">	<span class="keyword">this</span>.mAssetManager = (AssetManager) obj[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 保存宿主的信息和配置</span></span><br><span class="line">	Resources superRes = context.getResources();</span><br><span class="line">	DisplayMetrics mtrc = superRes.getDisplayMetrics();</span><br><span class="line">	Configuration cfg = superRes.getConfiguration();</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 用插件的AssetManager生成插件的Resources</span></span><br><span class="line">	<span class="keyword">this</span>.mResources = <span class="keyword">new</span> Resources(<span class="keyword">this</span>.mAssetManager, </span><br><span class="line">	superRes.getDisplayMetrics(), superRes.getConfiguration());</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 把宿主的Contex替换为插件的Context</span></span><br><span class="line">	<span class="keyword">super</span>.attachBaseContext(newContext);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>短短几行代码，却干了三件大事：</p>
+<ul>
+<li>生成新的AssetManager</li>
+<li>生成新的Resources</li>
+<li>替换Context</li>
+</ul>
+<h2 id="重载onCreate()等生命周期方法">重载onCreate()等生命周期方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">TypeId&lt;Bundle&gt; Bundle = TypeId.get(Bundle.class);</span><br><span class="line">TypeId&lt;ActivityOverider&gt; ActivityOverider = TypeId</span><br><span class="line">		.get(ActivityOverider.class);</span><br><span class="line"></span><br><span class="line">MethodId&lt;D, Void&gt; method = generatedType.getMethod(TypeId.VOID,</span><br><span class="line">		<span class="string">"onCreate"</span>, Bundle);</span><br><span class="line">Code methodCode = dexMaker.declare(method, PROTECTED);</span><br><span class="line"><span class="comment">// locals </span></span><br><span class="line">Local&lt;D&gt; localThis = methodCode.getThis(generatedType);</span><br><span class="line">Local&lt;Bundle&gt; lcoalBundle = methodCode.getParameter(<span class="number">0</span>, Bundle);</span><br><span class="line">Local&lt;Boolean&gt; lcoalCreated = methodCode.newLocal(TypeId.BOOLEAN);</span><br><span class="line">Local&lt;String&gt; pluginId = get_pluginId(generatedType, methodCode);</span><br><span class="line"><span class="comment">// this.mOnCreated = true;</span></span><br><span class="line">FieldId&lt;D, Boolean&gt; beforeOnCreate = generatedType.getField(TypeId.BOOLEAN, FIELD_mOnCreated);</span><br><span class="line">methodCode.loadConstant(lcoalCreated, <span class="keyword">true</span>);</span><br><span class="line">methodCode.iput(beforeOnCreate, localThis, lcoalCreated);</span><br><span class="line"></span><br><span class="line">MethodId&lt;ActivityOverider, Void&gt; method_call_onCreate = ActivityOverider</span><br><span class="line">		.getMethod(TypeId.VOID, <span class="string">"callback_onCreate"</span>, TypeId.STRING,</span><br><span class="line">				TypeId.get(Activity.class));</span><br><span class="line">methodCode</span><br><span class="line">		.invokeStatic(method_call_onCreate, <span class="keyword">null</span>, pluginId, localThis);</span><br><span class="line"></span><br><span class="line"><span class="comment">// super.onCreate()</span></span><br><span class="line">MethodId&lt;S, Void&gt; superMethod = superType.getMethod(TypeId.VOID, <span class="string">"onCreate"</span>,</span><br><span class="line">		Bundle);</span><br><span class="line">methodCode.invokeSuper(superMethod, <span class="keyword">null</span>, localThis, lcoalBundle);</span><br><span class="line">	</span><br><span class="line">methodCode.returnVoid();</span><br></pre></td></tr></table></figure>
+<p>翻译后的OnCreate()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle bundle)</span></span>&#123;</span><br><span class="line">	String pluginId = _pluginId;</span><br><span class="line">	<span class="keyword">this</span>.mOnCreated = <span class="keyword">true</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 回调给ActivityOverider</span></span><br><span class="line">	ActivityOverider.callback_onCreate(pluginId, <span class="keyword">this</span>);</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">super</span>.onCreate(bundle);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其他的onStart、onResume等方法就简单了，先调用super方法，然后调用ActivityOverider对应的callback_onXX方法。</p>
+<p>既然前面把正确的AssetManager、Resources都给生成了，就别再用错的了。</p>
+<h2 id="重载getAssets()、getResources()">重载getAssets()、getResources()</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">TypeId&lt;AssetManager&gt; AssetManager = TypeId.get(AssetManager.class);</span><br><span class="line">MethodId&lt;D, AssetManager&gt; getAssets = generatedType.getMethod(</span><br><span class="line">		AssetManager, <span class="string">"getAssets"</span>);</span><br><span class="line">Code code = dexMaker.declare(getAssets, PUBLIC);</span><br><span class="line">Local&lt;D&gt; localThis = code.getThis(generatedType);</span><br><span class="line">Local&lt;AssetManager&gt; localAsm = code.newLocal(AssetManager);</span><br><span class="line">Local&lt;AssetManager&gt; nullV = code.newLocal(AssetManager);</span><br><span class="line">code.loadConstant(nullV, <span class="keyword">null</span>);</span><br><span class="line">FieldId&lt;D, AssetManager&gt; res = generatedType.getField(AssetManager,</span><br><span class="line">		FIELD_ASSERTMANAGER);</span><br><span class="line">code.iget(res, localAsm, localThis);</span><br><span class="line">Label localAsmIsNull = <span class="keyword">new</span> Label();</span><br><span class="line">code.compare(Comparison.NE, localAsmIsNull, localAsm, nullV);</span><br><span class="line">MethodId&lt;S, AssetManager&gt; superGetAssetManager = superType.getMethod(</span><br><span class="line">		AssetManager, <span class="string">"getAssets"</span>);</span><br><span class="line">code.invokeSuper(superGetAssetManager, localAsm, localThis);</span><br><span class="line">code.mark(localAsmIsNull);</span><br><span class="line">code.returnValue(localAsm);</span><br></pre></td></tr></table></figure>
+<p>翻译后：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> AssetManager <span class="title">getAssets</span><span class="params">()</span></span>&#123;</span><br><span class="line">	AssetManager localAsm = <span class="keyword">this</span>.mAssetManager;</span><br><span class="line">		</span><br><span class="line">	<span class="keyword">if</span>(localAsm != <span class="keyword">null</span>)&#123;</span><br><span class="line">		<span class="keyword">return</span> localAsm;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">super</span>.getAssets();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>类似的 getResources方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Resources <span class="title">getResources</span><span class="params">()</span></span>&#123;</span><br><span class="line">	Resources localRes = <span class="keyword">this</span>.mResources;</span><br><span class="line">		</span><br><span class="line">	<span class="keyword">if</span>(localRes != <span class="keyword">null</span>)&#123;</span><br><span class="line">		<span class="keyword">return</span> localRes;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">super</span>.getResources();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="重载startActivityForResult()">重载startActivityForResult()</h2><p>startActivityForResult方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">TypeId&lt;Intent&gt; intent = TypeId.get(Intent.class);</span><br><span class="line">TypeId&lt;Integer&gt; requestCode = TypeId.INT;</span><br><span class="line">TypeId&lt;Bundle&gt; bundle = TypeId.get(Bundle.class);</span><br><span class="line"></span><br><span class="line">TypeId&lt;?&gt;[] params;</span><br><span class="line">String methodName = <span class="string">"startActivityForResult"</span>;</span><br><span class="line"><span class="keyword">final</span> <span class="keyword">boolean</span> isNewSdk = android.os.Build.VERSION.SDK_INT &gt; <span class="number">10</span>;</span><br><span class="line"><span class="keyword">if</span> (isNewSdk) &#123;</span><br><span class="line">	params = <span class="keyword">new</span> TypeId[] &#123; intent, requestCode, bundle &#125;;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	params = <span class="keyword">new</span> TypeId[] &#123; intent, requestCode &#125;;</span><br><span class="line">&#125;</span><br><span class="line">MethodId&lt;D, Void&gt; method = generatedType.getMethod(TypeId.VOID,</span><br><span class="line">		methodName, params);</span><br><span class="line">MethodId&lt;S, Void&gt; superMethod = superType.getMethod(TypeId.VOID,</span><br><span class="line">		methodName, params);</span><br><span class="line">Code methodCode = dexMaker.declare(method, PUBLIC);</span><br><span class="line">TypeId&lt;ActivityOverider&gt; ActivityOverider = TypeId</span><br><span class="line">		.get(ActivityOverider.class);</span><br><span class="line">MethodId&lt;ActivityOverider, Intent&gt; methodOveride = ActivityOverider</span><br><span class="line">		.getMethod(intent, <span class="string">"overrideStartActivityForResult"</span>,</span><br><span class="line">				TypeId.get(Activity.class),TypeId.STRING,</span><br><span class="line">				intent, requestCode, bundle);</span><br><span class="line"><span class="comment">// locals</span></span><br><span class="line">Local&lt;D&gt; localThis = methodCode.getThis(generatedType);</span><br><span class="line">Local&lt;Intent&gt; newIntent = methodCode.newLocal(intent);</span><br><span class="line">Local&lt;Bundle&gt; nullParamBundle = methodCode.newLocal(bundle);</span><br><span class="line">Local&lt;String&gt; pluginId = get_pluginId(generatedType, methodCode);</span><br><span class="line">methodCode.loadConstant(nullParamBundle, <span class="keyword">null</span>);</span><br><span class="line">Local&lt;?&gt; args[];</span><br><span class="line"><span class="keyword">if</span> (isNewSdk) &#123;</span><br><span class="line">	args = <span class="keyword">new</span> Local[] &#123;localThis</span><br><span class="line">			, pluginId</span><br><span class="line">			, methodCode.getParameter(<span class="number">0</span>, intent)<span class="comment">//</span></span><br><span class="line">			, methodCode.getParameter(<span class="number">1</span>, requestCode)<span class="comment">//</span></span><br><span class="line">			, methodCode.getParameter(<span class="number">2</span>, bundle)<span class="comment">//</span></span><br><span class="line">			&#125;;</span><br><span class="line">	methodCode.invokeStatic(methodOveride, newIntent, args);</span><br><span class="line">	<span class="comment">// super.startActivityForResult(...)</span></span><br><span class="line">	</span><br><span class="line">	methodCode.invokeSuper(superMethod, <span class="keyword">null</span>,</span><br><span class="line">			localThis<span class="comment">//</span></span><br><span class="line">			, newIntent<span class="comment">//</span></span><br><span class="line">			, methodCode.getParameter(<span class="number">1</span>, requestCode)<span class="comment">//</span></span><br><span class="line">			, methodCode.getParameter(<span class="number">2</span>, bundle) <span class="comment">//</span></span><br><span class="line">			);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	args = <span class="keyword">new</span> Local[] &#123;localThis</span><br><span class="line">			, pluginId</span><br><span class="line">			, methodCode.getParameter(<span class="number">0</span>, intent)<span class="comment">//</span></span><br><span class="line">			, methodCode.getParameter(<span class="number">1</span>, requestCode)<span class="comment">//</span></span><br><span class="line">			,nullParamBundle</span><br><span class="line">			&#125;;</span><br><span class="line">	methodCode.invokeStatic(methodOveride, newIntent, args);</span><br><span class="line">	methodCode.invokeSuper(superMethod, <span class="keyword">null</span>,</span><br><span class="line">			localThis<span class="comment">//</span></span><br><span class="line">			, newIntent<span class="comment">//</span></span><br><span class="line">			, methodCode.getParameter(<span class="number">1</span>, requestCode)<span class="comment">//</span></span><br><span class="line">			);</span><br><span class="line">&#125;</span><br><span class="line">methodCode.returnVoid();</span><br></pre></td></tr></table></figure>
+<p>翻译后</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">// API 11以上</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivityForResult</span><span class="params">(Intent intent, <span class="keyword">int</span> requestCode, Bundle bundle)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 回调给ActivityOverider</span></span><br><span class="line">	ActivityOverider.overrideStartActivityForResult(intent, requestCode, bundle);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">super</span>.startActivityForResult(intent, requestCode, bundle);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// API 11以下</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startActivityForResult</span><span class="params">(Intent intent, <span class="keyword">int</span> requestCode)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 回调给ActivityOverider</span></span><br><span class="line">	ActivityOverider.overrideStartActivityForResult(intent, requestCode, <span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">super</span>.startActivityForResult(intent, requestCode, <span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="重载其他方法">重载其他方法</h2><p>剩下的getComponentName、getPackageName、getIntent方法都比简单了，就不详细分析。</p>
+<p>不得不说，ActivityClassGenerator使用dexmaker动态生成activity，写起来真的很麻烦，但是这个生成的Activty生命周期由系统维护，不用自己模拟系统行为，并且无需修改插件中的代码，是一个很赞的思路。</p>
+<h2 id="总结">总结</h2><p>至此，<strong>Andorid PluginManager</strong>主体功能就全部分析完了。</p>
+<p>回头来总结一下<strong>Andorid PluginManager</strong>的加载插件的过程和原理：</p>
+<ul>
+<li>替换宿主Application的ClassLoader为FrameworkClassLoader</li>
+<li>解析插件apk中的AndroidManifest.xml文件，保存Activity、Service、Content Provider等信息到PluginInfo中</li>
+<li>生成PluginClassLoader保存到PluginInfo备用</li>
+<li>生成插件AssetManager、Resources保存到PluginInfo备用</li>
+<li>实例化插件Application，并替换Application的Context</li>
+<li>生成继承自源Activity的PluginActivity<ul>
+<li>定义PluginActivity类</li>
+<li>重载attachBaseContext()方法，用PluginInfo缓存的对象替换Context、AssetManager、Resources</li>
+<li>重载onCreate()等生命周期方法</li>
+<li>重载getAssets()、getResource()方法</li>
+<li>重载startActivityForResult()</li>
+<li>重载getIntent()等其他方法</li>
+<li>生成dex文件</li>
+<li>通过PluginClassLoader加载生成的dex</li>
+</ul>
+</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/DexMaker/">DexMaker</a><a href="/tags/PluginActivity/">PluginActivity</a><a href="/tags/插件/">插件</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://lwn.me/2015/08/13/android-pluginmanager-source-code-analysis-5/" data-title="Android PluginManager 源码解析5--ActivityClassGenerator | Fatter&#39;s Blog" data-tsina="2807580682" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2015/08/12/android-pluginmanager-source-code-analysis-4/"  title="Android PluginManager 源码解析4--ActivityOverider">
+ <strong>下一篇：</strong><br/> 
+ <span>Android PluginManager 源码解析4--ActivityOverider
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityClassGenerator简介"><span class="toc-number">1.</span> <span class="toc-text">ActivityClassGenerator简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#定义PluginActivty类"><span class="toc-number">2.</span> <span class="toc-text">定义PluginActivty类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#添加自定义字段"><span class="toc-number">3.</span> <span class="toc-text">添加自定义字段</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#生成构造函数"><span class="toc-number">4.</span> <span class="toc-text">生成构造函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载attachBaseContext()"><span class="toc-number">5.</span> <span class="toc-text">重载attachBaseContext()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载onCreate()等生命周期方法"><span class="toc-number">6.</span> <span class="toc-text">重载onCreate()等生命周期方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载getAssets()、getResources()"><span class="toc-number">7.</span> <span class="toc-text">重载getAssets()、getResources()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载startActivityForResult()"><span class="toc-number">8.</span> <span class="toc-text">重载startActivityForResult()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载其他方法"><span class="toc-number">9.</span> <span class="toc-text">重载其他方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">10.</span> <span class="toc-text">总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>10</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>2</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/插件/" title="插件">插件<sup>5</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/bitmap/" title="bitmap">bitmap<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ClassLoader/" title="ClassLoader">ClassLoader<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vo/" title="vo">vo<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/PluginActivity/" title="PluginActivity">PluginActivity<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/反射/" title="反射">反射<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/canvas/" title="canvas">canvas<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/抓包/" title="抓包">抓包<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/drawable/" title="drawable">drawable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/paint/" title="paint">paint<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DexMaker/" title="DexMaker">DexMaker<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ContextWrapper/" title="ContextWrapper">ContextWrapper<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/PackageManager/" title="PackageManager">PackageManager<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="http://www.trinea.cn/" target="_blank" title="Trinea&#39;s Blog">Trinea&#39;s Blog</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://codekk.com/open-source-project-analysis" target="_blank" title="Codekk">Codekk</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://github.com/Trinea/android-open-project" target="_blank" title="android-open-project">android-open-project</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://asce1885.gitbooks.io/android-rd-senior-advanced/content/" target="_blank" title="android-rd-senior-advanced">android-rd-senior-advanced</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello, I&#39;m Fatter in Google. <br/>
+			This is my blog, believe it or not.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/fatterx" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/fatterx" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:lwn888@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2015 
+		
+		<a href="/about" target="_blank" title="Fatter">Fatter</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'fatterx';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-48995178-1', 'lwn.me');  
+ga('send', 'pageview');
+</script>
+
+
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3F0c54a9784fe703965b5dd3fe168d12f3' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -11,37 +11,31 @@
     
 
     
-    <meta name="description" content="ActivityOverider概述ActivityOverider负责与动态生成的PluginActivity交互。
+    <meta name="description" content="ActivityOverider概述ActivityOverider负责生成PluginActivity，并与PluginActivity交互，处理PluginActivity的回调。
 ActivityOverider主要干了3件事：
 
-修正StartActivity的Intent
 动态生成PluginActivity的Dex文件
-处理PluginActivity生命周期的回调，根据需要做一些特殊处理
-
-overrideStartActivityForResul">
+修正StartActivity的Intent
+处理PluginActivity生命周期的回调，根据需要做一些特殊">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android PluginManager 源码解析4--ActivityOverider">
 <meta property="og:url" content="http://lwn.me/2015/08/12/android-pluginmanager-source-code-analysis-4/index.html">
 <meta property="og:site_name" content="Fatter's Blog">
-<meta property="og:description" content="ActivityOverider概述ActivityOverider负责与动态生成的PluginActivity交互。
+<meta property="og:description" content="ActivityOverider概述ActivityOverider负责生成PluginActivity，并与PluginActivity交互，处理PluginActivity的回调。
 ActivityOverider主要干了3件事：
 
-修正StartActivity的Intent
 动态生成PluginActivity的Dex文件
-处理PluginActivity生命周期的回调，根据需要做一些特殊处理
-
-overrideStartActivityForResul">
-<meta property="og:updated_time" content="2015-08-12T10:12:27.000Z">
+修正StartActivity的Intent
+处理PluginActivity生命周期的回调，根据需要做一些特殊">
+<meta property="og:updated_time" content="2015-08-13T11:03:51.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android PluginManager 源码解析4--ActivityOverider">
-<meta name="twitter:description" content="ActivityOverider概述ActivityOverider负责与动态生成的PluginActivity交互。
+<meta name="twitter:description" content="ActivityOverider概述ActivityOverider负责生成PluginActivity，并与PluginActivity交互，处理PluginActivity的回调。
 ActivityOverider主要干了3件事：
 
-修正StartActivity的Intent
 动态生成PluginActivity的Dex文件
-处理PluginActivity生命周期的回调，根据需要做一些特殊处理
-
-overrideStartActivityForResul">
+修正StartActivity的Intent
+处理PluginActivity生命周期的回调，根据需要做一些特殊">
 
     
     <link rel="alternative" href="/atom.xml" title="Fatter&#39;s Blog" type="application/atom+xml">
@@ -269,20 +263,23 @@ overrideStartActivityForResul">
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityOverider概述"><span class="toc-number">1.</span> <span class="toc-text">ActivityOverider概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#overrideStartActivityForResult方法解析"><span class="toc-number">2.</span> <span class="toc-text">overrideStartActivityForResult方法解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#启动明确指定类名的Activity"><span class="toc-number">2.1.</span> <span class="toc-text">启动明确指定类名的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#启动有具体Action的Activity"><span class="toc-number">2.2.</span> <span class="toc-text">启动有具体Action的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#偷天换日，修改Intent"><span class="toc-number">2.3.</span> <span class="toc-text">偷天换日，修改Intent</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#动态生成PluginActivity"><span class="toc-number">3.</span> <span class="toc-text">动态生成PluginActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Activity生命周期回调"><span class="toc-number">4.</span> <span class="toc-text">Activity生命周期回调</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#overrideAttachBaseContext()"><span class="toc-number">4.1.</span> <span class="toc-text">overrideAttachBaseContext()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#callback_onCreate()"><span class="toc-number">4.2.</span> <span class="toc-text">callback_onCreate()</span></a></li></ol></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityOverider概述"><span class="toc-number">1.</span> <span class="toc-text">ActivityOverider概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#动态生成PluginActivity"><span class="toc-number">2.</span> <span class="toc-text">动态生成PluginActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载StartActivityForResult"><span class="toc-number">3.</span> <span class="toc-text">重载StartActivityForResult</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#启动明确指定类名的Activity"><span class="toc-number">3.1.</span> <span class="toc-text">启动明确指定类名的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#启动有具体Action的Activity"><span class="toc-number">3.2.</span> <span class="toc-text">启动有具体Action的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#偷天换日，修改Intent"><span class="toc-number">3.3.</span> <span class="toc-text">偷天换日，修改Intent</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载AttachBaseContext()"><span class="toc-number">4.</span> <span class="toc-text">重载AttachBaseContext()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#处理onCreate()等的回调"><span class="toc-number">5.</span> <span class="toc-text">处理onCreate()等的回调</span></a></li></ol>
 		
 		</div>
 		
-		<h2 id="ActivityOverider概述">ActivityOverider概述</h2><p><code>ActivityOverider</code>负责与动态生成的<code>PluginActivity</code>交互。</p>
+		<h2 id="ActivityOverider概述">ActivityOverider概述</h2><p><code>ActivityOverider</code>负责生成<code>PluginActivity</code>，并与<code>PluginActivity</code>交互，处理<code>PluginActivity</code>的回调。</p>
 <p><code>ActivityOverider</code>主要干了3件事：</p>
 <ul>
-<li>修正StartActivity的Intent</li>
 <li>动态生成<code>PluginActivity</code>的Dex文件</li>
+<li>修正StartActivity的Intent</li>
 <li>处理<code>PluginActivity</code>生命周期的回调，根据需要做一些特殊处理</li>
 </ul>
-<h2 id="overrideStartActivityForResult方法解析">overrideStartActivityForResult方法解析</h2><p>由于插件内的Activity没有在<code>AndroidManifest.xml</code>中注册，只注册了<code>androidx.pluginmgr.PluginActivity</code>，当通过<code>Context.startActivtiyForResult()</code>调起目标Activity时会找不到，所以需要对系统的<code>Context.startActivtiyForResult()</code>进行劫持，把要启动的Activity指向<code>androidx.pluginmgr.PluginActivity</code>，当加载<code>PluginActivity</code>时，通过<code>FrameworkClassLoader.loadClass()</code>方法再把类的加载路径修正回目标Activity，对系统进行了一个瞒天过海，骗过单纯的系统，哈哈。</p>
-<p>startActivity可能启动的是插件内部的Activity，也可能是宿主的Activity，也可能是其它插件的Activity，这一切都交由<code>overrideStartActivityForResult()</code>方法处理。</p>
+<h2 id="动态生成PluginActivity">动态生成PluginActivity</h2><p>通过<code>createProxyDex()</code>为要加载的Activity生成代理类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	String pkgName = plugin.getPackageName();</span><br><span class="line">	ActivityClassGenerator.createActivityDex(activity, targetClassName,</span><br><span class="line">			saveDir, plugin.getId(), pkgName);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">	Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>具体生成机制委托给<code>ActivityClassGenerator</code>实现，<a href="2015/08/13/android-pluginmanager-source-code-analysis-5/">具体分析见下篇</a>。</p>
 <a id="more"></a>
+<h2 id="重载StartActivityForResult">重载StartActivityForResult</h2><p>由于插件内的Activity没有在<code>AndroidManifest.xml</code>中注册，只注册了<code>androidx.pluginmgr.PluginActivity</code>，当通过<code>Context.startActivtiyForResult()</code>调起目标Activity时会找不到，所以需要对系统的<code>Context.startActivtiyForResult()</code>进行劫持，把要启动的Activity指向<code>androidx.pluginmgr.PluginActivity</code>，当加载<code>PluginActivity</code>时，通过<code>FrameworkClassLoader.loadClass()</code>方法再把类的加载路径修正回目标Activity，对系统进行了一个瞒天过海，骗过单纯的系统，哈哈。</p>
+<p>startActivity可能启动的是插件内部的Activity，也可能是宿主的Activity，也可能是其它插件的Activity，这一切都交由<code>overrideStartActivityForResult()</code>方法处理。</p>
 <ul>
 <li><h3 id="启动明确指定类名的Activity">启动明确指定类名的Activity</h3></li>
 </ul>
@@ -295,18 +292,15 @@ overrideStartActivityForResul">
 <li><h3 id="偷天换日，修改Intent">偷天换日，修改Intent</h3></li>
 </ul>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setPluginIntent</span><span class="params">(Intent intent, PlugInfo plugin,</span><br><span class="line">			String actName)</span> </span>&#123;</span><br><span class="line">	PluginManager mgr = PluginManager.getInstance();</span><br><span class="line">	String pluginId = plugin.getId();</span><br><span class="line">	<span class="comment">// 根据类名动态生成新的PluginActivity</span></span><br><span class="line">	createProxyDex(plugin, actName);</span><br><span class="line">	<span class="comment">// 修改Intent中的ComponentName，将其指向androidx.pluginmgr.PluginActivity</span></span><br><span class="line">	String act = mgr.getFrameworkClassLoader().newActivityClassName(</span><br><span class="line">				pluginId, actName);</span><br><span class="line">	ComponentName compname = <span class="keyword">new</span> ComponentName(mgr.getContext(), act);</span><br><span class="line">	intent.setComponent(compname);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="动态生成PluginActivity">动态生成PluginActivity</h2><p>通过<code>createProxyDex()</code>为要加载的Activity生成代理类</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">	String pkgName = plugin.getPackageName();</span><br><span class="line">	ActivityClassGenerator.createActivityDex(activity, targetClassName,</span><br><span class="line">			saveDir, plugin.getId(), pkgName);</span><br><span class="line">&#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">	Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>具体生成机制委托给<code>ActivityClassGenerator</code>实现，后面再分析。</p>
-<h2 id="Activity生命周期回调">Activity生命周期回调</h2><p><code>PluginActivity</code>的一些生命周期方法会回调到<code>ActivityOverider</code>里。</p>
+<p><code>PluginActivity</code>的一些生命周期方法会回调到<code>ActivityOverider</code>里。</p>
 <p>比较重要的几个有<code>overrideAttachBaseContext()</code>，<code>callback_onCreate()</code></p>
 <p>先看<code>overrideAttachBaseContext()</code>。</p>
-<h3 id="overrideAttachBaseContext()">overrideAttachBaseContext()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PlugInfo plugin = PluginManager.getInstance().getPluginById(pluginId);</span><br><span class="line"><span class="keyword">if</span> (plugin.getApplication() == <span class="keyword">null</span>) &#123;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		PluginManager.getInstance().initPluginApplication(plugin,</span><br><span class="line">				<span class="keyword">null</span>);</span><br><span class="line">	&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">		Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">PluginActivityWrapper actWrapper = <span class="keyword">new</span> PluginActivityWrapper(base, plugin.appWrapper, plugin);</span><br><span class="line"><span class="keyword">return</span> <span class="keyword">new</span> Object[] &#123; actWrapper, plugin.getAssetManager() &#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="重载AttachBaseContext()">重载AttachBaseContext()</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">PlugInfo plugin = PluginManager.getInstance().getPluginById(pluginId);</span><br><span class="line"><span class="keyword">if</span> (plugin.getApplication() == <span class="keyword">null</span>) &#123;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		PluginManager.getInstance().initPluginApplication(plugin,</span><br><span class="line">				<span class="keyword">null</span>);</span><br><span class="line">	&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">		Log.e(tag, Log.getStackTraceString(e));</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">PluginActivityWrapper actWrapper = <span class="keyword">new</span> PluginActivityWrapper(base, plugin.appWrapper, plugin);</span><br><span class="line"><span class="keyword">return</span> <span class="keyword">new</span> Object[] &#123; actWrapper, plugin.getAssetManager() &#125;;</span><br></pre></td></tr></table></figure>
 <p><code>overrideAttachBaseContext()</code>方法是为了更改Activity中的Context，把默认宿主的Context替换为修改过后的插件Context。</p>
 <p>由于Activity是继承自<code>ContextThemeWrapper</code>，而Application是继承<code>ContextWrapper</code>，所以这里不能直接使用<code>PluginContextWrapper</code>，而是把在Application初始化时生成的<code>PluginContextWrapper</code>注入继承自<code>ContextThemeWrapper</code>的<code>PluginActivityWrapper</code>。</p>
 <p>这样插件Application的Context与插件Activity的Context便在行为上一致了。</p>
 <p>接着来看<code>callback_onCreate()</code>。</p>
-<h3 id="callback_onCreate()">callback_onCreate()</h3><ul>
+<h2 id="处理onCreate()等的回调">处理onCreate()等的回调</h2><ul>
 <li><code>callback_onCreate()</code>先替换了Activity的Application。</li>
 </ul>
 <p>因为<code>PluginActivity</code>实际还是在宿主中调起的，所以默认的Context、Application都是宿主的。既然Context已经替换了，那Application也不能漏掉。</p>
@@ -361,6 +355,14 @@ overrideStartActivityForResul">
 	
 <nav class="article-nav clearfix">
  
+ <div class="prev" >
+ <a href="/2015/08/13/android-pluginmanager-source-code-analysis-5/" title="Android PluginManager 源码解析5--ActivityClassGenerator">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Android PluginManager 源码解析5--ActivityClassGenerator</span>
+</a>
+</div>
+
 
 <div class="next">
 <a href="/2015/08/11/android-pluginmanager-source-code-analysis-3/"  title="Android PluginManager 源码解析3--PluginManifestUtil">
@@ -386,7 +388,7 @@ overrideStartActivityForResul">
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
  
- <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityOverider概述"><span class="toc-number">1.</span> <span class="toc-text">ActivityOverider概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#overrideStartActivityForResult方法解析"><span class="toc-number">2.</span> <span class="toc-text">overrideStartActivityForResult方法解析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#启动明确指定类名的Activity"><span class="toc-number">2.1.</span> <span class="toc-text">启动明确指定类名的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#启动有具体Action的Activity"><span class="toc-number">2.2.</span> <span class="toc-text">启动有具体Action的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#偷天换日，修改Intent"><span class="toc-number">2.3.</span> <span class="toc-text">偷天换日，修改Intent</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#动态生成PluginActivity"><span class="toc-number">3.</span> <span class="toc-text">动态生成PluginActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Activity生命周期回调"><span class="toc-number">4.</span> <span class="toc-text">Activity生命周期回调</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#overrideAttachBaseContext()"><span class="toc-number">4.1.</span> <span class="toc-text">overrideAttachBaseContext()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#callback_onCreate()"><span class="toc-number">4.2.</span> <span class="toc-text">callback_onCreate()</span></a></li></ol></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityOverider概述"><span class="toc-number">1.</span> <span class="toc-text">ActivityOverider概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#动态生成PluginActivity"><span class="toc-number">2.</span> <span class="toc-text">动态生成PluginActivity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载StartActivityForResult"><span class="toc-number">3.</span> <span class="toc-text">重载StartActivityForResult</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#启动明确指定类名的Activity"><span class="toc-number">3.1.</span> <span class="toc-text">启动明确指定类名的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#启动有具体Action的Activity"><span class="toc-number">3.2.</span> <span class="toc-text">启动有具体Action的Activity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#偷天换日，修改Intent"><span class="toc-number">3.3.</span> <span class="toc-text">偷天换日，修改Intent</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重载AttachBaseContext()"><span class="toc-number">4.</span> <span class="toc-text">重载AttachBaseContext()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#处理onCreate()等的回调"><span class="toc-number">5.</span> <span class="toc-text">处理onCreate()等的回调</span></a></li></ol>
  
   </div>
 
@@ -400,7 +402,7 @@ overrideStartActivityForResul">
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>9</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>10</sup></a></li>
 		  
 		
 		  
@@ -417,7 +419,7 @@ overrideStartActivityForResul">
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/插件/" title="插件">插件<sup>4</sup></a></li>
+				<li><a href="/tags/插件/" title="插件">插件<sup>5</sup></a></li>
 			
 		
 			
@@ -433,6 +435,10 @@ overrideStartActivityForResul">
 			
 		
 			
+				<li><a href="/tags/PluginActivity/" title="PluginActivity">PluginActivity<sup>2</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/反射/" title="反射">反射<sup>2</sup></a></li>
 			
 		
@@ -441,15 +447,11 @@ overrideStartActivityForResul">
 			
 		
 			
-				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
+				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
 			
 		
 			
@@ -461,11 +463,11 @@ overrideStartActivityForResul">
 			
 		
 			
-				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/closure/" title="closure">closure<sup>1</sup></a></li>
+				<li><a href="/tags/scopechain/" title="scopechain">scopechain<sup>1</sup></a></li>
 			
 		
 			
@@ -477,11 +479,15 @@ overrideStartActivityForResul">
 			
 		
 			
-				<li><a href="/tags/scope-chain/" title="scope chain">scope chain<sup>1</sup></a></li>
+				<li><a href="/tags/sdcard/" title="sdcard">sdcard<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/PluginActivity/" title="PluginActivity">PluginActivity<sup>1</sup></a></li>
+				<li><a href="/tags/tcpdump/" title="tcpdump">tcpdump<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/DexMaker/" title="DexMaker">DexMaker<sup>1</sup></a></li>
 			
 		
 			
@@ -490,10 +496,6 @@ overrideStartActivityForResul">
 		
 			
 				<li><a href="/tags/PackageManager/" title="PackageManager">PackageManager<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/androidManifest/" title="androidManifest">androidManifest<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -775,6 +777,11 @@ ga('send', 'pageview');
 </script>
 
 
+
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3F0c54a9784fe703965b5dd3fe168d12f3' type='text/javascript'%3E%3C/script%3E"));
+</script>
 
 
 
