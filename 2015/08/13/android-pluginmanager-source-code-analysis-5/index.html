@@ -17,7 +17,7 @@
 <meta property="og:url" content="http://lwn.me/2015/08/13/android-pluginmanager-source-code-analysis-5/index.html">
 <meta property="og:site_name" content="Fatter's Blog">
 <meta property="og:description" content="ActivityClassGenerator简介ActivityClassGenerator是体现Activity PluginManager插件sdk思路独特的地方。ActivityClassGenerator使用DexMaker动态生成PluginActivity，这个PluginActivty继承于插件中的源Activity，在生成时重载了源Activity的一些方法，替换了Activity">
-<meta property="og:updated_time" content="2015-08-13T10:52:32.000Z">
+<meta property="og:updated_time" content="2015-08-14T05:54:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android PluginManager 源码解析5--ActivityClassGenerator">
 <meta name="twitter:description" content="ActivityClassGenerator简介ActivityClassGenerator是体现Activity PluginManager插件sdk思路独特的地方。ActivityClassGenerator使用DexMaker动态生成PluginActivity，这个PluginActivty继承于插件中的源Activity，在生成时重载了源Activity的一些方法，替换了Activity">
@@ -59,6 +59,8 @@
 						<li><a href="/archives">归档</a></li>
 					
 						<li><a href="/lab">实验室</a></li>
+					
+						<li><a href="/tools">小工具</a></li>
 					
 						<li><a href="/about">关于</a></li>
 					
@@ -306,6 +308,8 @@
 </ul>
 </li>
 </ul>
+<p>其中在生成<code>PluginActivity</code>时重载getAssets()、getResource()方法，感觉重复了，因为已经在替换Context的时候已经重载过了。</p>
+<p>经简单测试，注释掉<code>ActivityClassGenerator</code>中生成getAssets()、getResource()的方法依旧可以正常运行，访问到插件中的资源。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -556,7 +560,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2015 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2016 
 		
 		<a href="/about" target="_blank" title="Fatter">Fatter</a>
 		

@@ -21,7 +21,7 @@
 <meta property="og:description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。
 项目地址：https://github.com/houkx/android-pluginmgr
 相比于其他的插件化解决方案，Android pluginManager主要优势是采用了动态代理技术，自动为插件">
-<meta property="og:updated_time" content="2015-08-12T08:57:03.000Z">
+<meta property="og:updated_time" content="2015-08-14T06:58:44.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android PluginManager 源码解析1--PluginManager">
 <meta name="twitter:description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。
@@ -65,6 +65,8 @@
 						<li><a href="/archives">归档</a></li>
 					
 						<li><a href="/lab">实验室</a></li>
+					
+						<li><a href="/tools">小工具</a></li>
 					
 						<li><a href="/about">关于</a></li>
 					
@@ -277,9 +279,11 @@
 <a id="more"></a>
 <h3 id="尚未完成的部分：">尚未完成的部分：</h3><ul>
 <li>目前还不支持service、content provider</li>
+<li>AndroidManifest.xml中intent filter中的data字段尚未解析</li>
 </ul>
 <h3 id="一些限制：">一些限制：</h3><ul>
 <li>插件中的权限，无法动态注册，插件中的权限都得在宿主中注册</li>
+<li>插件静态注册的广播无法使用</li>
 <li>不支持多进程</li>
 <li>Manifest中注册的activity的目前只能使用一种launchMode，<br>要支持singleTask等多种launchMode，需要自己维护activity栈来模拟。</li>
 </ul>
@@ -646,7 +650,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2015 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2016 
 		
 		<a href="/about" target="_blank" title="Fatter">Fatter</a>
 		

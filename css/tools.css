@@ -1,0 +1,61 @@
+.highlight-font{
+	font-size: 20px 
+}
+
+.function {
+	text-align: center;
+}
+
+.function .button{
+	padding:10px;
+	cursor: pointer;
+	border: 1px solid #c6cede;
+    background-color: #fff;
+}
+
+.function .clipboard{
+	padding:10px;
+	color:#ea6753;
+	border: 1px solid #c6cede;
+    background-color: #fff;
+    margin-left: 10px;
+}
+.function section{
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+.function input{
+	padding:10px;
+	color:#ea6753;
+	border: 1px solid #c6cede;
+    background-color: #fff;
+    max-width: 140px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.function textarea {
+    padding: 10px;
+    width: 400px;
+    height: 400px;
+    margin-left: 10px;
+    color:#ea6753;
+    border: 1px solid #c6cede;
+    background-color: #fff;
+    font-size: 10pt;
+    font-family: 'Microsoft Yahei';
+    resize:none;
+}
+.function ::-webkit-input-placeholder {
+    color: #c6cede;
+    padding: 2px 0 0 4px
+}
+
+.function ::-moz-placeholder {
+    color: #c6cede;
+    padding: 2px 0 0 4px
+}
+
+.function :-ms-input-placeholder {
+    color: #c6cede;
+    padding: 2px 0 0 4px
+}
