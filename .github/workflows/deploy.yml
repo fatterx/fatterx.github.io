@@ -24,8 +24,30 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # git checkou
+      - name: git check out
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
+      # setup nodejs
+      - name: setup nodejs
+        uses: actions/setup-node@2
+      # install hexo
+      - name: install hexo
+
+        run: |
+          npm install hexo-cli -g
+          npm i -S hexo-prism-plugin -g
+          npm install hexo-generator-search --save -g
+          npm i hexo-permalink-pinyin  -g
+          npm i --save hexo-wordcount -g
+          npm install hexo-filter-github-emojis  -g
+          npm install hexo-generator-feed  -g
+          npm install
+      # hexo generate static pages
+      - name: generate public
+        run: |
+          hexo clean
+          hexo g
 
       # Deploy hexo blog website.
       - name: Deploy
@@ -36,7 +58,5 @@ jobs:
           build_dir: public
           author: fatterx
           committer: lwn888@gmail.com
-      # Use the output from the `deploy` step(use for test action)
-      - name: Get the output
-        run: |
-          echo "${{ steps.deploy.outputs.notify }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_KEY }}
