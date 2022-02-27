@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v2
       # setup nodejs
       - name: setup nodejs
-        uses: actions/setup-node@2
+        uses: actions/setup-node@v2
       # install hexo
       - name: install hexo
 
