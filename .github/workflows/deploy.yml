@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v2
       # setup nodejs
       - name: setup nodejs
-        uses: actions/setup-node@2
+        uses: actions/setup-node@v2
       # install hexo
       - name: install hexo
 
@@ -59,4 +59,4 @@ jobs:
           author: fatterx
           committer: lwn888@gmail.com
         env:
-          GITHUB_TOKEN: ${{ secrets.DEPLOY_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
