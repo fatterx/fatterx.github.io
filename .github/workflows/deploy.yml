@@ -56,7 +56,7 @@ jobs:
         with:
           target_branch: master
           build_dir: public
-          author: fatterx
-          committer: lwn888@gmail.com
+          author: fatterx <lwn888@gmail.com>
+          committer: fatterx <lwn888@gmail.com>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
