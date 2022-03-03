@@ -1,7 +1,7 @@
 ---
 title: Android PluginManager 源码解析4--ActivityOverider
 date: 2015-08-12 18:11:29
-category: "android"
+category: "Android"
 tags: [插件, PluginActivity, ContextWrapper]
 
 ---

@@ -2,7 +2,7 @@
 layout: post
 title: "canvas、bitmap、paint之间是什么关系"
 description: ""
-category: "android" 
+category: "Android" 
 date: 2014/4/13
 
 tags: [canvas, bitmap, paint]

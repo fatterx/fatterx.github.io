@@ -2,7 +2,7 @@
 layout: post
 title: "Drawable小研究"
 description: ""
-category: android 
+category: "Android" 
 date: 2014/4/13
 tags: [drawable, bitmap]
 ---

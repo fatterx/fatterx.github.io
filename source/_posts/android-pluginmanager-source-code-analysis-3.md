@@ -1,7 +1,7 @@
 ---
 title: Android PluginManager 源码解析3--PluginManifestUtil
 date: 2015-08-11 15:12:55
-category: "android"
+category: "Android"
 tags: [插件, PackageManager, androidManifest, PackageInfo, ResolveInfo]
 
 ---

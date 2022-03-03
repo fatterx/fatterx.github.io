@@ -2,7 +2,7 @@
 layout: post
 title: "图解javascript中的变量对象、闭包、作用域链机理"
 description: ""
-category: "javascript"
+category: "JavaScript"
 date: 2014/11/02
 tags: [vo, closure, scopechain]
 ---

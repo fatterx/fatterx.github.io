@@ -2,7 +2,7 @@
 layout: post
 title: "android不同系统版本sd的挂载方式"
 description: ""
-category: "android" 
+category: "Android" 
 date: 2014/11/1
 
 tags: [android, sdcard]

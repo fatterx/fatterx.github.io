@@ -2,7 +2,7 @@
 layout: post
 title: "对javascript中的Variable Object的理解"
 description: ""
-category: "javascript" 
+category: "JavaScript" 
 date: 2014/11/1
 
 tags: [javascript,vo,scope chain]

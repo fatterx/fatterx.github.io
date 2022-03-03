@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Android PluginManager 源码解析1--PluginManager"
-category: "android" 
+category: "Android" 
 date: 2015/08/09
 tags: [插件, 反射, ClassLoader]
 

@@ -1,7 +1,7 @@
 ---
 title: Android PluginManager 源码解析2--FrameworkClassLoader
 date: 2015-08-10 21:12:55
-category: "android"
+category: "Android"
 tags: [插件, 反射, ClassLoader, DexClassLoader, AndroidThread]
 
 ---

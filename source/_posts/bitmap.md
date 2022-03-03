@@ -2,7 +2,7 @@
 layout: post
 title: "Android Bitmap的一点研究"
 description: ""
-category: "android" 
+category: "Android" 
 date: 2014/4/11
 
 tags: [canvas, bitmap]
