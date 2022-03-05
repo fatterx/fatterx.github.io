@@ -5,7 +5,7 @@ description: ""
 category: "Android" 
 date: 2014/11/1
 
-tags: [android, sdcard]
+tags: [sdcard]
 ---
 
 
