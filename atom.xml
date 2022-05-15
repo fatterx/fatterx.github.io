@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Caden&#39;s Blog</title>
+  
+  <subtitle>认清生活真相之后依然热爱</subtitle>
+  <link href="https://lwn.me/atom.xml" rel="self"/>
+  
+  <link href="https://lwn.me/"/>
+  <updated>2022-05-15T11:19:04.447Z</updated>
+  <id>https://lwn.me/</id>
+  
+  <author>
+    <name>Caden</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>为何加载So时会发生死锁？</title>
+    <link href="https://lwn.me/2022/03/04/dead-lock-when-loading-so/"/>
+    <id>https://lwn.me/2022/03/04/dead-lock-when-loading-so/</id>
+    <published>2022-03-04T08:43:16.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h3 id=&quot;问题描述&quot;&gt;&lt;a href=&quot;#问题描述&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="Android" scheme="https://lwn.me/categories/Android/"/>
+    
+    
+    <category term="dead lock" scheme="https://lwn.me/tags/dead-lock/"/>
+    
+    <category term="死锁" scheme="https://lwn.me/tags/%E6%AD%BB%E9%94%81/"/>
+    
+    <category term="anr" scheme="https://lwn.me/tags/anr/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>kotlin coroutine入门</title>
+    <link href="https://lwn.me/2022/02/28/kotlin-coroutine-basic/"/>
+    <id>https://lwn.me/2022/02/28/kotlin-coroutine-basic/</id>
+    <published>2022-02-28T02:04:12.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h3 id=&quot;引言&quot;&gt;&lt;a href=&quot;#引言&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="Kotlin" scheme="https://lwn.me/categories/Kotlin/"/>
+    
+    
+    <category term="kotlin" scheme="https://lwn.me/tags/kotlin/"/>
+    
+    <category term="coroutine" scheme="https://lwn.me/tags/coroutine/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android PluginManager 源码解析4--ActivityOverider</title>
+    <link href="https://lwn.me/2015/08/12/android-pluginmanager-source-code-analysis-4/"/>
+    <id>https://lwn.me/2015/08/12/android-pluginmanager-source-code-analysis-4/</id>
+    <published>2015-08-12T10:11:29.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;ActivityOverider概述&quot;&gt;&lt;a href=&quot;#ActivityOverider概述&quot; class=&quot;headerlink&quot; title=&quot;ActivityOverider概述&quot;&gt;&lt;/a&gt;ActivityOverider概述&lt;/h2&gt;&lt;p&gt;&lt;code&gt;ActivityOverider&lt;/code&gt;负责与动态生成的&lt;code&gt;PluginActivity&lt;/code&gt;交互。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ActivityOverider&lt;/code&gt;主要干了3件事：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;修正StartActivity的Intent&lt;/li&gt;
+&lt;li&gt;动态生成&lt;code&gt;PluginActivity&lt;/code&gt;的Dex文件&lt;/li&gt;
+&lt;li&gt;处理&lt;code&gt;PluginActivity&lt;/code&gt;生命周期的回调，根据需要做一些特殊处理&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;overrideStartActivityForResult方法解析&quot;&gt;&lt;a href=&quot;#overrideStartActivityForResult方法解析&quot; class=&quot;headerlink&quot; title=&quot;overrideStartActivityForResult方法解析&quot;&gt;&lt;/a&gt;overrideStartActivityForResult方法解析&lt;/h2&gt;&lt;p&gt;由于插件内的Activity没有在&lt;code&gt;AndroidManifest.xml&lt;/code&gt;中注册，只注册了&lt;code&gt;androidx.pluginmgr.PluginActivity&lt;/code&gt;，当通过&lt;code&gt;Context.startActivtiyForResult()&lt;/code&gt;调起目标Activity时会找不到，所以需要对系统的&lt;code&gt;Context.startActivtiyForResult()&lt;/code&gt;进行劫持，把要启动的Activity指向&lt;code&gt;androidx.pluginmgr.PluginActivity&lt;/code&gt;，当加载&lt;code&gt;PluginActivity&lt;/code&gt;时，通过&lt;code&gt;FrameworkClassLoader.loadClass()&lt;/code&gt;方法再把类的加载路径修正回目标Activity，对系统进行了一个瞒天过海，骗过单纯的系统，哈哈。&lt;/p&gt;
+&lt;p&gt;startActivity可能启动的是插件内部的Activity，也可能是宿主的Activity，也可能是其它插件的Activity，这一切都交由&lt;code&gt;overrideStartActivityForResult()&lt;/code&gt;方法处理。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Android" scheme="https://lwn.me/categories/Android/"/>
+    
+    
+    <category term="插件" scheme="https://lwn.me/tags/%E6%8F%92%E4%BB%B6/"/>
+    
+    <category term="PluginActivity" scheme="https://lwn.me/tags/PluginActivity/"/>
+    
+    <category term="ContextWrapper" scheme="https://lwn.me/tags/ContextWrapper/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android PluginManager 源码解析3--PluginManifestUtil</title>
+    <link href="https://lwn.me/2015/08/11/android-pluginmanager-source-code-analysis-3/"/>
+    <id>https://lwn.me/2015/08/11/android-pluginmanager-source-code-analysis-3/</id>
+    <published>2015-08-11T07:12:55.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;PluginManifestUtil分析&quot;&gt;&lt;a href=&quot;#PluginManifestUtil分析&quot; class=&quot;headerlink&quot; title=&quot;PluginManifestUtil分析&quot;&gt;&lt;/a&gt;PluginManifestUtil分析&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;PluginManifestUtil&lt;/strong&gt;是&lt;strong&gt;Android PluginManager&lt;/strong&gt;的一个工具类。只有一个公共方法&lt;code&gt;setManifestInfo()&lt;/code&gt;，负责解析插件apk中的androidManifest.xml文件，并将解析的信息保存到&lt;code&gt;PluginInfo&lt;/code&gt;中。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;解析PackageInfo&quot;&gt;&lt;a href=&quot;#解析PackageInfo&quot; class=&quot;headerlink&quot; title=&quot;解析PackageInfo&quot;&gt;&lt;/a&gt;解析PackageInfo&lt;/h3&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;通过&lt;code&gt;PackageManager&lt;/code&gt;获取插件apk文件的&lt;code&gt;PackageInfo&lt;/code&gt;，保持在&lt;code&gt;PluginInfo&lt;/code&gt;中。&lt;/p&gt;
+&lt;pre class=&quot;line-numbers language-java&quot; data-language=&quot;java&quot;&gt;&lt;code class=&quot;language-java&quot;&gt;
+&lt;span class=&quot;token class-name&quot;&gt;PackageInfo&lt;/span&gt; pkgInfo &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; context&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;getPackageManager&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+		&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;getPackageArchiveInfo&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;
+				apkPath&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;
+				&lt;span class=&quot;token class-name&quot;&gt;PackageManager&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;GET_ACTIVITIES
+						&lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;PackageManager&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;GET_RECEIVERS&lt;span class=&quot;token comment&quot;&gt;//&lt;/span&gt;
+						&lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;PackageManager&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;GET_PROVIDERS&lt;span class=&quot;token comment&quot;&gt;//&lt;/span&gt;
+						&lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;PackageManager&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;GET_META_DATA&lt;span class=&quot;token comment&quot;&gt;//&lt;/span&gt;
+						&lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;PackageManager&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;GET_SHARED_LIBRARY_FILES&lt;span class=&quot;token comment&quot;&gt;//&lt;/span&gt;
+		&lt;span class=&quot;token comment&quot;&gt;// | PackageManager.GET_SERVICES//&lt;/span&gt;
+		&lt;span class=&quot;token comment&quot;&gt;// | PackageManager.GET_SIGNATURES//&lt;/span&gt;
+		&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;// Log.d(&quot;ManifestReader: setManifestInfo&quot;, &quot;GET_SHARED_LIBRARY_FILES=&quot;&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;// + pkgInfo.applicationInfo.nativeLibraryDir);&lt;/span&gt;
+info&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;setPackageInfo&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;pkgInfo&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+
+
+
+&lt;p&gt;&lt;code&gt;PackageInfo&lt;/code&gt;保存有插件apk的包名、版本、注册的activities、services、receivers、providers、声明的权限等信息。&lt;br&gt;但是&lt;strong&gt;Android PluginManager&lt;/strong&gt;目前只处理了activities、receivers。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Android" scheme="https://lwn.me/categories/Android/"/>
+    
+    
+    <category term="插件" scheme="https://lwn.me/tags/%E6%8F%92%E4%BB%B6/"/>
+    
+    <category term="PackageManager" scheme="https://lwn.me/tags/PackageManager/"/>
+    
+    <category term="androidManifest" scheme="https://lwn.me/tags/androidManifest/"/>
+    
+    <category term="PackageInfo" scheme="https://lwn.me/tags/PackageInfo/"/>
+    
+    <category term="ResolveInfo" scheme="https://lwn.me/tags/ResolveInfo/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android PluginManager 源码解析2--FrameworkClassLoader</title>
+    <link href="https://lwn.me/2015/08/10/android-pluginmanager-source-code-analysis-2/"/>
+    <id>https://lwn.me/2015/08/10/android-pluginmanager-source-code-analysis-2/</id>
+    <published>2015-08-10T13:12:55.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;学习&lt;strong&gt;Android PluginManager&lt;/strong&gt;加载插件的机制，需要先了解系统是如何加载Activity的。&lt;/p&gt;
+&lt;h2 id=&quot;Android-启动Activity的机制&quot;&gt;&lt;a href=&quot;#Android-启动Activity的机制&quot; class=&quot;headerlink&quot; title=&quot;Android 启动Activity的机制&quot;&gt;&lt;/a&gt;Android 启动Activity的机制&lt;/h2&gt;&lt;p&gt;Android系统的Activity是通过 &lt;code&gt;AndroidThread&lt;/code&gt;.&lt;code&gt;performLaunchActivity()&lt;/code&gt;方法生成并启动的。&lt;/p&gt;
+&lt;pre class=&quot;line-numbers language-java&quot; data-language=&quot;java&quot;&gt;&lt;code class=&quot;language-java&quot;&gt;
+&lt;span class=&quot;token class-name&quot;&gt;Activity&lt;/span&gt; activity &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token class-name&quot;&gt;&lt;span class=&quot;token namespace&quot;&gt;java&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;lang&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;/span&gt;ClassLoader&lt;/span&gt; cl &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; r&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;packageInfo&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;getClassLoader&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    activity &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; mInstrumentation&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;newActivity&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;
+            cl&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; component&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;getClassName&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; r&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;intent&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;token class-name&quot;&gt;StrictMode&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;incrementExpectedActivityCount&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;activity&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;getClass&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    r&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;intent&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;setExtrasClassLoader&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;cl&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    r&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;intent&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;prepareToEnterProcess&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;r&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;state &lt;span class=&quot;token operator&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        r&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;state&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;setClassLoader&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;cl&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token class-name&quot;&gt;Exception&lt;/span&gt; e&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;!&lt;/span&gt;mInstrumentation&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;onException&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;activity&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; e&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;token keyword&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;RuntimeException&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;
+            &lt;span class=&quot;token string&quot;&gt;&quot;Unable to instantiate activity &quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt; component
+            &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;: &quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt; e&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;toString&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; e&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+&lt;span aria-hidden=&quot;true&quot; class=&quot;line-numbers-rows&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中&lt;code&gt;r.packageInfo&lt;/code&gt;是一个&lt;code&gt;LoadedApk&lt;/code&gt;对象，保存了加载dex中class文件的ClassLoader，默认是系统的&lt;code&gt;PathClassLoader&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;通过&lt;code&gt;AndroidThread&lt;/code&gt;源码，看出&lt;code&gt;AndroidThread&lt;/code&gt;通过委托给&lt;code&gt;Instrumentation&lt;/code&gt;的&lt;code&gt;newActivity()&lt;/code&gt;方法生成Activity。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Android" scheme="https://lwn.me/categories/Android/"/>
+    
+    
+    <category term="插件" scheme="https://lwn.me/tags/%E6%8F%92%E4%BB%B6/"/>
+    
+    <category term="反射" scheme="https://lwn.me/tags/%E5%8F%8D%E5%B0%84/"/>
+    
+    <category term="ClassLoader" scheme="https://lwn.me/tags/ClassLoader/"/>
+    
+    <category term="DexClassLoader" scheme="https://lwn.me/tags/DexClassLoader/"/>
+    
+    <category term="AndroidThread" scheme="https://lwn.me/tags/AndroidThread/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android PluginManager 源码解析1--PluginManager</title>
+    <link href="https://lwn.me/2015/08/08/android-pluginmanager-source-code-analysis-1/"/>
+    <id>https://lwn.me/2015/08/08/android-pluginmanager-source-code-analysis-1/</id>
+    <published>2015-08-08T16:00:00.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;Android-PluginManager简介&quot;&gt;&lt;a href=&quot;#Android-PluginManager简介&quot; class=&quot;headerlink&quot; title=&quot;Android PluginManager简介&quot;&gt;&lt;/a&gt;Android PluginManager简介&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;Android pluginManager&lt;/strong&gt;是&lt;a href=&quot;https://github.com/houkx/&quot;&gt;HouKangxi&lt;/a&gt;大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。&lt;/p&gt;
+&lt;p&gt;项目地址：&lt;a href=&quot;&quot;&gt;https://github.com/houkx/android-pluginmgr&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;相比于其他的插件化解决方案，&lt;strong&gt;Android pluginManager&lt;/strong&gt;主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。&lt;/p&gt;
+&lt;h3 id=&quot;实现的功能点：&quot;&gt;&lt;a href=&quot;#实现的功能点：&quot; class=&quot;headerlink&quot; title=&quot;实现的功能点：&quot;&gt;&lt;/a&gt;实现的功能点：&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;插件为普通apk，无须依赖任何jar(摘自&lt;a href=&quot;http://blog.csdn.net/hkxxx/article/details/42194387&quot;&gt;作者的博客&lt;/a&gt;)&lt;/li&gt;
+&lt;li&gt;Activity生命周期由系统自己管理&lt;/li&gt;
+&lt;li&gt;使用简单，只需要了解一个类PluginManager的两个方法&lt;/li&gt;
+&lt;li&gt;启动Activity的效率高&lt;/li&gt;
+&lt;li&gt;不修改插件，被加载的插件仍然可以独立安装。&lt;/li&gt;
+&lt;li&gt;可加载任意apk中的 Activity (包括子类 ActionBarActivity 、FragmentActivity)的派生类(不包括违反限制条件的Activity)&lt;/li&gt;
+&lt;li&gt;支持插件自定义Application&lt;/li&gt;
+&lt;li&gt;支持插件Apk中的Activity跳转到别的Activity(插件内部的或系统的,外部已安装apk的，甚至是别的插件中的),也没有任何限制&lt;/li&gt;
+&lt;li&gt;支持Activity设置主题(与系统的主题应用规则一样，如果Activity没指定Theme,但所在Application指定了Theme，则使用Application的Theme)&lt;/li&gt;
+&lt;li&gt;初步支持.so&lt;/li&gt;
+&lt;li&gt;支持插件使用 SharedPreference 或 SQLite数据库(尚未完善)&lt;/li&gt;
+&lt;/ul&gt;</summary>
+    
+    
+    
+    <category term="Android" scheme="https://lwn.me/categories/Android/"/>
+    
+    
+    <category term="插件" scheme="https://lwn.me/tags/%E6%8F%92%E4%BB%B6/"/>
+    
+    <category term="反射" scheme="https://lwn.me/tags/%E5%8F%8D%E5%B0%84/"/>
+    
+    <category term="ClassLoader" scheme="https://lwn.me/tags/ClassLoader/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>图解javascript中的变量对象、闭包、作用域链机理</title>
+    <link href="https://lwn.me/2014/11/01/javascript-vo-closure-scopechain/"/>
+    <id>https://lwn.me/2014/11/01/javascript-vo-closure-scopechain/</id>
+    <published>2014-11-01T16:00:00.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;什么是闭包&quot;&gt;&lt;a href=&quot;#什么是闭包&quot; class=&quot;headerlink&quot; title=&quot;什么是闭包&quot;&gt;&lt;/a&gt;什么是闭包&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;javascript&lt;/strong&gt;中的&lt;strong&gt;闭包&lt;/strong&gt;是一个强大而灵活的武器，搞清&lt;strong&gt;闭包&lt;/strong&gt;，&lt;strong&gt;作用域链&lt;/strong&gt;的作用机理，能让我更好的将&lt;strong&gt;闭包&lt;/strong&gt;运用在我们的项目中。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures&quot;&gt;mozilla开发者中心的定义：&lt;/a&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Closures are functions that refer to independent (free) variables. &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In other words, the function defined in the closure ‘remembers’ the environment in which it was created. &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我理解的&lt;strong&gt;闭包&lt;/strong&gt;是一个&lt;strong&gt;function&lt;/strong&gt;，并且具有访问不在&lt;strong&gt;function&lt;/strong&gt;内部定义的变量的能力，如嵌套&lt;strong&gt;function&lt;/strong&gt;中的子&lt;strong&gt;function&lt;/strong&gt;可以访问到定义在父&lt;strong&gt;function&lt;/strong&gt;中的变量，是一类语言（如&lt;strong&gt;js&lt;/strong&gt;）的特性。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="JavaScript" scheme="https://lwn.me/categories/JavaScript/"/>
+    
+    
+    <category term="vo" scheme="https://lwn.me/tags/vo/"/>
+    
+    <category term="closure" scheme="https://lwn.me/tags/closure/"/>
+    
+    <category term="scopechain" scheme="https://lwn.me/tags/scopechain/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>android不同系统版本sd的挂载方式</title>
+    <link href="https://lwn.me/2014/10/31/android-sdcard-mounting-method/"/>
+    <id>https://lwn.me/2014/10/31/android-sdcard-mounting-method/</id>
+    <published>2014-10-31T16:00:00.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;2-x系统&quot;&gt;&lt;a href=&quot;#2-x系统&quot; class=&quot;headerlink&quot; title=&quot;2.x系统&quot;&gt;&lt;/a&gt;2.x系统&lt;/h2&gt;&lt;p&gt;sd卡实际挂载位置&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    /mnt/sdcard 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;并建立了一个/sdcard的软链接指向/mnt/sdcard&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;    /sdcard/  --&amp;gt; /mnt/sdcard
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;Android 2.2之后的版本允许将应用程序安装于SD卡&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;当SD卡挂载于手机时，&lt;code&gt;/mnt/sdcard/.android_secure&lt;/code&gt; 目录会被映射到&lt;code&gt;/mnt/asec&lt;/code&gt; 目录和 &lt;code&gt;/mnt/secure&lt;/code&gt; 目录。其中&lt;code&gt;/mnt/asec&lt;/code&gt; 目录中主要是程序的安装目录，包括其执行文件和lib文件等；而&lt;code&gt;/mnt/secure&lt;/code&gt; 目录中就存放程序加密后的档案。也就是说，在&lt;code&gt;/mnt&lt;/code&gt;路径下看到的&lt;code&gt;/mnt/asec&lt;/code&gt;目录和&lt;code&gt;/mnt/secure&lt;/code&gt;目录并不是真正存在在手机内存里的，它们只是&lt;code&gt;/mnt/sdcard/.android_secure&lt;/code&gt;目录的一个影像而已。也就是说&lt;code&gt;/mnt/sdcard/.android_secure&lt;/code&gt; =&lt;code&gt;/mnt/secure&lt;/code&gt; +&lt;code&gt;/mnt/asec&lt;/code&gt;&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Android" scheme="https://lwn.me/categories/Android/"/>
+    
+    
+    <category term="sdcard" scheme="https://lwn.me/tags/sdcard/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>对javascript中的Variable Object的理解</title>
+    <link href="https://lwn.me/2014/10/31/javascript-variable-object/"/>
+    <id>https://lwn.me/2014/10/31/javascript-variable-object/</id>
+    <published>2014-10-31T16:00:00.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;Variable-Object&quot;&gt;&lt;a href=&quot;#Variable-Object&quot; class=&quot;headerlink&quot; title=&quot;Variable Object&quot;&gt;&lt;/a&gt;Variable Object&lt;/h2&gt;&lt;p&gt;在&lt;strong&gt;ECMAScipt&lt;/strong&gt;中，通过变量对象&lt;strong&gt;Variable Object (VO)&lt;strong&gt;机制来存贮、访问变量variables。&lt;/strong&gt;VO&lt;/strong&gt;中包含了：&lt;/p&gt;
+&lt;h3 id=&quot;1-variables-通过var-声明的变量&quot;&gt;&lt;a href=&quot;#1-variables-通过var-声明的变量&quot; class=&quot;headerlink&quot; title=&quot;1.  variables (通过var 声明的变量)&quot;&gt;&lt;/a&gt;1.  variables (通过var 声明的变量)&lt;/h3&gt;&lt;h3 id=&quot;2-function-declaration-函数声明&quot;&gt;&lt;a href=&quot;#2-function-declaration-函数声明&quot; class=&quot;headerlink&quot; title=&quot;2.  function declaration (函数声明)&quot;&gt;&lt;/a&gt;2.  function declaration (函数声明)&lt;/h3&gt;&lt;h3 id=&quot;3-function-formal-parameters-函数行参&quot;&gt;&lt;a href=&quot;#3-function-formal-parameters-函数行参&quot; class=&quot;headerlink&quot; title=&quot;3.  function formal parameters (函数行参)&quot;&gt;&lt;/a&gt;3.  function formal parameters (函数行参)&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;注&lt;/strong&gt;： 不包括function expression (函数表达式)。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="JavaScript" scheme="https://lwn.me/categories/JavaScript/"/>
+    
+    
+    <category term="javascript" scheme="https://lwn.me/tags/javascript/"/>
+    
+    <category term="vo" scheme="https://lwn.me/tags/vo/"/>
+    
+    <category term="scope chain" scheme="https://lwn.me/tags/scope-chain/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>canvas、bitmap、paint之间是什么关系</title>
+    <link href="https://lwn.me/2014/04/12/canvas/"/>
+    <id>https://lwn.me/2014/04/12/canvas/</id>
+    <published>2014-04-12T16:00:00.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;a href=&quot;http://developer.android.com/reference/android/graphics/Canvas.html&quot;&gt;官方文档&lt;/a&gt;翻译过来的解释：&lt;/p&gt;
+&lt;p&gt;要绘图，需要4个基本组件:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Bitmap 保存像素的容器&lt;/li&gt;
+&lt;li&gt;Canvas 执行绘图命令的宿主&lt;/li&gt;
+&lt;li&gt;Rect/Path/text/Bitmap 要绘制的元素&lt;/li&gt;
+&lt;li&gt;Paint 用什么样的方式绘制&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;android的&lt;strong&gt;canvas&lt;/strong&gt;绘图，基于&lt;strong&gt;skia&lt;/strong&gt;，想要了解&lt;strong&gt;canvas&lt;/strong&gt;的绘图过程，需要对&lt;strong&gt;canvas&lt;/strong&gt;和&lt;strong&gt;skia&lt;/strong&gt;的源码有所了解。&lt;/p&gt;
+&lt;p&gt;查看Canvas源码，发现Canvas与Bitmap类似，都是对其native方法进行了封装。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Android" scheme="https://lwn.me/categories/Android/"/>
+    
+    
+    <category term="canvas" scheme="https://lwn.me/tags/canvas/"/>
+    
+    <category term="bitmap" scheme="https://lwn.me/tags/bitmap/"/>
+    
+    <category term="paint" scheme="https://lwn.me/tags/paint/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Drawable小研究</title>
+    <link href="https://lwn.me/2014/04/12/drawable/"/>
+    <id>https://lwn.me/2014/04/12/drawable/</id>
+    <published>2014-04-12T16:00:00.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;Drawable，官方给出的解释是“&lt;em&gt;something that can be drawn&lt;/em&gt;”，翻译过来就是可以被画的东西。&lt;/p&gt;
+&lt;p&gt;官方把“可以被画的东西”分为了7种形式:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;../../11/bitmap&quot;&gt;Bitmap&lt;/a&gt; 最简单的“可以被画的东西”，可能是png，或jpg&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Nine Patch&lt;/strong&gt; 俗称“.9”图，android自己扩展的一种png格式，可以自定义图像拉伸的信息&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Shape&lt;/strong&gt; 用简单的绘图指令生成图片。如画矩形、圆形&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Layers&lt;/strong&gt; 多个Drawable，按照层叠顺序组成的Drawable&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;States&lt;/strong&gt; Drawable的状态，如“focused”, “pressed”等&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Levels&lt;/strong&gt; 可以更改level的Drawable，如进度条，电池进度&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;strong&gt;Scale&lt;/strong&gt; 可缩放的Drawable&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</summary>
+    
+    
+    
+    <category term="Android" scheme="https://lwn.me/categories/Android/"/>
+    
+    
+    <category term="bitmap" scheme="https://lwn.me/tags/bitmap/"/>
+    
+    <category term="drawable" scheme="https://lwn.me/tags/drawable/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android Bitmap的一点研究</title>
+    <link href="https://lwn.me/2014/04/10/bitmap/"/>
+    <id>https://lwn.me/2014/04/10/bitmap/</id>
+    <published>2014-04-10T16:00:00.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;android中的&lt;strong&gt;Bitmap&lt;/strong&gt;与其他对象不同，不能通过&lt;code&gt;new Bitmap()&lt;/code&gt;直接实例化.&lt;/p&gt;
+&lt;p&gt;查看源码，&lt;strong&gt;Bitmap&lt;/strong&gt;的构造函数是&lt;em&gt;default&lt;/em&gt;的，仅包内可见，实际是供&lt;strong&gt;native&lt;/strong&gt;方法调用的。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Bitmap&lt;/strong&gt;中实际保存数据的地方在&lt;strong&gt;native&lt;/strong&gt;层，&lt;strong&gt;java&lt;/strong&gt;层仅对&lt;strong&gt;native&lt;/strong&gt;层方法进行封装、重载，&lt;/p&gt;
+&lt;p&gt;并提供一些状态的判断方法、属性的&lt;code&gt;set&lt;/code&gt;、&lt;code&gt;get&lt;/code&gt;方法。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Bitmap&lt;/strong&gt;有&lt;code&gt;mNativaBitmap&lt;/code&gt;属性，用来保存&lt;code&gt;nativeBitmap&lt;/code&gt;的地址。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;mNativeBitmap&lt;/code&gt;的地址在构造&lt;strong&gt;Bitmap&lt;/strong&gt;时，由&lt;strong&gt;native&lt;/strong&gt;方法直接传递进来。&lt;/p&gt;
+&lt;p&gt;####所以整个&lt;strong&gt;Bitmap&lt;/strong&gt;可以认为在&lt;strong&gt;java&lt;/strong&gt;层基本不怎么占内存，大部分内存占用都是在&lt;strong&gt;native&lt;/strong&gt;层。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Android" scheme="https://lwn.me/categories/Android/"/>
+    
+    
+    <category term="canvas" scheme="https://lwn.me/tags/canvas/"/>
+    
+    <category term="bitmap" scheme="https://lwn.me/tags/bitmap/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>如何在android上抓包</title>
+    <link href="https://lwn.me/2014/03/20/how-to-view-network-requests-on-android/"/>
+    <id>https://lwn.me/2014/03/20/how-to-view-network-requests-on-android/</id>
+    <published>2014-03-20T16:00:00.000Z</published>
+    <updated>2022-05-15T11:19:04.447Z</updated>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;用Charles&quot;&gt;&lt;a href=&quot;#用Charles&quot; class=&quot;headerlink&quot; title=&quot;用Charles&quot;&gt;&lt;/a&gt;用Charles&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;android4.0以上的系统，wifi环境下支持设置网络代理。&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;安装&lt;a href=&quot;http://www.charlesproxy.com/&quot;&gt;Charles&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;打开Charles，在&lt;code&gt;proxy&lt;/code&gt;–&amp;gt;&lt;code&gt;proxy settings&lt;/code&gt;–&amp;gt;&lt;code&gt;proxies&lt;/code&gt;中设置要监听的端口号，一般为&lt;strong&gt;8080&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;查看本机ip，&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;  $ ifconfig
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;记住本机的ip地址，如&lt;strong&gt;222.11.22.11&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;将android手机连上wifi，确保与电脑处于&lt;strong&gt;同一&lt;/strong&gt;ip段。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;一般在wifi连接的&lt;strong&gt;高级设置&lt;/strong&gt;里可以找到&lt;strong&gt;代理设置&lt;/strong&gt;，将代理设置改为&lt;strong&gt;手动&lt;/strong&gt;，&lt;br&gt;填入刚才记下的ip地址，以及Charles里设置的端口号&lt;strong&gt;8080&lt;/strong&gt;，保存后退出。&lt;br&gt;现在手机的网络请求都会被转发到Charles上。&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;</summary>
+    
+    
+    
+    <category term="Android" scheme="https://lwn.me/categories/Android/"/>
+    
+    
+    <category term="tcpdump" scheme="https://lwn.me/tags/tcpdump/"/>
+    
+    <category term="抓包" scheme="https://lwn.me/tags/%E6%8A%93%E5%8C%85/"/>
+    
+  </entry>
+  
+</feed>

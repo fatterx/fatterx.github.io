@@ -1,0 +1,1480 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Android PluginManager 源码解析1--PluginManager, Caden">
+    <meta name="description" content="Android PluginManager简介Android pluginManager是HouKangxi大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。
+项目地址：https://github.com">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-48995178-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+    gtag('config', 'UA-48995178-1');
+</script>
+
+
+    <title>Android PluginManager 源码解析1--PluginManager | Caden&#39;s Blog</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+<meta name="generator" content="Hexo 6.0.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="Caden's Blog" type="application/atom+xml">
+</head>
+
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Caden&#39;s Blog</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>分类</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/lab" class="waves-effect waves-light">
+      
+      <i class="fas fa-flask" style="zoom: 0.6;"></i>
+      
+      <span>Lab</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Caden&#39;s Blog</div>
+        <div class="logo-desc">
+            
+            让我们忠于理想，让我们面对现实
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			分类
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/lab" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-flask"></i>
+			
+			Lab
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/fatterx" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/fatterx" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/18.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">Android PluginManager 源码解析1--PluginManager</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/%E6%8F%92%E4%BB%B6/">
+                                <span class="chip bg-color">插件</span>
+                            </a>
+                        
+                            <a href="/tags/%E5%8F%8D%E5%B0%84/">
+                                <span class="chip bg-color">反射</span>
+                            </a>
+                        
+                            <a href="/tags/ClassLoader/">
+                                <span class="chip bg-color">ClassLoader</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/Android/" class="post-category">
+                                Android
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2015-08-09
+                </div>
+                
+
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-check fa-fw"></i>更新日期:&nbsp;&nbsp;
+                    2022-05-15
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-file-word fa-fw"></i>文章字数:&nbsp;&nbsp;
+                    2.2k
+                </div>
+                
+
+                
+                <div class="info-break-policy">
+                    <i class="far fa-clock fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                    9 分
+                </div>
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h2 id="Android-PluginManager简介"><a href="#Android-PluginManager简介" class="headerlink" title="Android PluginManager简介"></a>Android PluginManager简介</h2><p><strong>Android pluginManager</strong>是<a target="_blank" rel="noopener" href="https://github.com/houkx/">HouKangxi</a>大神开发的一个android插件化开发框架，可以动态的加载apk，实现组件的热插拔。</p>
+<p>项目地址：<a href="">https://github.com/houkx/android-pluginmgr</a></p>
+<p>相比于其他的插件化解决方案，<strong>Android pluginManager</strong>主要优势是采用了动态代理技术，自动为插件生成代理activity，插件apk基本无需做任何更改。</p>
+<h3 id="实现的功能点："><a href="#实现的功能点：" class="headerlink" title="实现的功能点："></a>实现的功能点：</h3><ul>
+<li>插件为普通apk，无须依赖任何jar(摘自<a target="_blank" rel="noopener" href="http://blog.csdn.net/hkxxx/article/details/42194387">作者的博客</a>)</li>
+<li>Activity生命周期由系统自己管理</li>
+<li>使用简单，只需要了解一个类PluginManager的两个方法</li>
+<li>启动Activity的效率高</li>
+<li>不修改插件，被加载的插件仍然可以独立安装。</li>
+<li>可加载任意apk中的 Activity (包括子类 ActionBarActivity 、FragmentActivity)的派生类(不包括违反限制条件的Activity)</li>
+<li>支持插件自定义Application</li>
+<li>支持插件Apk中的Activity跳转到别的Activity(插件内部的或系统的,外部已安装apk的，甚至是别的插件中的),也没有任何限制</li>
+<li>支持Activity设置主题(与系统的主题应用规则一样，如果Activity没指定Theme,但所在Application指定了Theme，则使用Application的Theme)</li>
+<li>初步支持.so</li>
+<li>支持插件使用 SharedPreference 或 SQLite数据库(尚未完善)</li>
+</ul>
+<span id="more"></span>
+
+<h3 id="尚未完成的部分："><a href="#尚未完成的部分：" class="headerlink" title="尚未完成的部分："></a>尚未完成的部分：</h3><ul>
+<li>目前还不支持service、content provider</li>
+</ul>
+<h3 id="一些限制："><a href="#一些限制：" class="headerlink" title="一些限制："></a>一些限制：</h3><ul>
+<li>插件中的权限，无法动态注册，插件中的权限都得在宿主中注册</li>
+<li>不支持多进程</li>
+<li>Manifest中注册的activity的目前只能使用一种launchMode，<br>要支持singleTask等多种launchMode，需要自己维护activity栈来模拟。</li>
+</ul>
+<h3 id="动态加载apk的思路："><a href="#动态加载apk的思路：" class="headerlink" title="动态加载apk的思路："></a>动态加载apk的思路：</h3><p>就目前自己了解的情况来看，动态加载apk，一般是通过DexClassLoader，加载apk中的Activity。</p>
+<p>此时调起的Activity是普通的Java对象，没有了onCreate() 、onStart ()、onResume()、onPause()、onStop()、onDestory()等生命周期。</p>
+<p>为解决这个问题，一般都会在宿主中有一个ProxyActivity，它是一个真实的Activity，由系统管理它的生命周期。</p>
+<p>ProxyActivity持有一个插件的Activity的引用，当系统触发ProxyActivity的生命周期时，ProxyActivity通知插件的Activity来模拟正常Activity的生命周期。</p>
+<p>ProxyActivity通知插件的Activity方式分为两种：</p>
+<ul>
+<li>直接通过反射调用插件Activity的生命周期方法。效率较低</li>
+<li>插件Activity继承一个BasePluginActivity或者实现一个PluginInterface。对插件浸入性较大，需要改动较多代码。</li>
+</ul>
+<p>其中一个难点是插件资源文件的访问。</p>
+<p>由于Activity变成了普通的Java对象，没有了Context，不能通过getResources()直接访问插件中的资源。<br>解决方案有几种：</p>
+<ul>
+<li>把插件的资源复制到宿主中，向插件注入宿主的Context</li>
+<li>把插件的资源解压到sd卡某路径下，以流的形式读取，自己解析</li>
+<li>修改AssetManager，把插件的路径添加到AssetManager中</li>
+</ul>
+<h2 id="PluginManager初始化"><a href="#PluginManager初始化" class="headerlink" title="PluginManager初始化"></a>PluginManager初始化</h2><ul>
+<li><h3 id="获取application-Context"><a href="#获取application-Context" class="headerlink" title="获取application Context"></a>获取application Context</h3></li>
+</ul>
+<p>PluginManager是一个单例，在初始化时将宿主（host）application Context 作为PluginManager的Context</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">Context</span> ctx <span class="token operator">=</span> context<span class="token punctuation">.</span><span class="token function">getApplicationContext</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">synchronized</span> <span class="token punctuation">(</span><span class="token class-name">PluginManager</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    instance<span class="token punctuation">.</span><span class="token function">init</span><span class="token punctuation">(</span>ctx<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li><h3 id="创建plugins目录"><a href="#创建plugins目录" class="headerlink" title="创建plugins目录"></a>创建plugins目录</h3></li>
+</ul>
+<p>在<code>dexInternalStoragePath</code>目录下保存插件的原apk文件，及动态生成的新的dex文件</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">dexInternalStoragePath <span class="token operator">=</span> context
+        <span class="token punctuation">.</span><span class="token function">getDir</span><span class="token punctuation">(</span><span class="token string">"plugins"</span><span class="token punctuation">,</span> <span class="token class-name">Context</span><span class="token punctuation">.</span>MODE_PRIVATE<span class="token punctuation">)</span><span class="token punctuation">;</span>
+dexInternalStoragePath<span class="token punctuation">.</span><span class="token function">mkdirs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li><h3 id="创建pluginouts目录"><a href="#创建pluginouts目录" class="headerlink" title="创建pluginouts目录"></a>创建pluginouts目录</h3></li>
+</ul>
+<p>在<code>dexOutputPath</code>目录下保存插件的原dex文件</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">File</span> optimizedDexPath <span class="token operator">=</span> ctx<span class="token punctuation">.</span><span class="token function">getDir</span><span class="token punctuation">(</span><span class="token string">"plugsout"</span><span class="token punctuation">,</span> <span class="token class-name">Context</span><span class="token punctuation">.</span>MODE_PRIVATE<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>optimizedDexPath<span class="token punctuation">.</span><span class="token function">exists</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    optimizedDexPath<span class="token punctuation">.</span><span class="token function">mkdirs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+dexOutputPath <span class="token operator">=</span> optimizedDexPath<span class="token punctuation">.</span><span class="token function">getAbsolutePath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li><h3 id="替换classLoader"><a href="#替换classLoader" class="headerlink" title="替换classLoader"></a>替换classLoader</h3></li>
+</ul>
+<p>把宿主 application context 的<code>classLoader</code>通过反射替换为自定义的classLoader FrameworkClassLoader.</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">try</span> <span class="token punctuation">{</span>
+          <span class="token class-name">Object</span> mPackageInfo <span class="token operator">=</span> <span class="token class-name">ReflectionUtils</span><span class="token punctuation">.</span><span class="token function">getFieldValue</span><span class="token punctuation">(</span>ctx<span class="token punctuation">,</span>
+                  <span class="token string">"mBase.mPackageInfo"</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+          frameworkClassLoader <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">FrameworkClassLoader</span><span class="token punctuation">(</span>
+                  ctx<span class="token punctuation">.</span><span class="token function">getClassLoader</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token comment">// set Application's classLoader to FrameworkClassLoader</span>
+          <span class="token class-name">ReflectionUtils</span><span class="token punctuation">.</span><span class="token function">setFieldValue</span><span class="token punctuation">(</span>mPackageInfo<span class="token punctuation">,</span> <span class="token string">"mClassLoader"</span><span class="token punctuation">,</span>
+                  frameworkClassLoader<span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Exception</span> e<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+          e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="加载插件"><a href="#加载插件" class="headerlink" title="加载插件"></a>加载插件</h2><ul>
+<li><h3 id="生成PluginInfo-对象保存插件信息"><a href="#生成PluginInfo-对象保存插件信息" class="headerlink" title="生成PluginInfo 对象保存插件信息"></a>生成PluginInfo 对象保存插件信息</h3></li>
+</ul>
+<p>把生成的PluginInfo对象保存Map中缓存，记录当前加载的插件。这里保存PluginInfo时需要在调用插件的地方为插件传入一个id，如果id为null，则默认使用插件的包命作为插件id。</p>
+<p>会同时保持在<code>pluginIdToInfoMap</code>，<code>pluginPkgToInfoMap</code> 两个map中，此处有冗余的嫌疑。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">PlugInfo</span> info <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PlugInfo</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+info<span class="token punctuation">.</span><span class="token function">setId</span><span class="token punctuation">(</span>pluginId <span class="token operator">==</span> <span class="token keyword">null</span> <span class="token operator">?</span> pluginApk<span class="token punctuation">.</span><span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> pluginId<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+
+pluginPkgToInfoMap<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>plugInfo<span class="token punctuation">.</span><span class="token function">getPackageName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> plugInfo<span class="token punctuation">)</span><span class="token punctuation">;</span>
+pluginIdToInfoMap<span class="token punctuation">.</span><span class="token function">put</span><span class="token punctuation">(</span>plugInfo<span class="token punctuation">.</span><span class="token function">getId</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> plugInfo<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<ul>
+<li><h3 id="copy插件apk文件到dexInternalStoragePath目录下"><a href="#copy插件apk文件到dexInternalStoragePath目录下" class="headerlink" title="copy插件apk文件到dexInternalStoragePath目录下"></a>copy插件apk文件到<code>dexInternalStoragePath</code>目录下</h3></li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">File</span> privateFile <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">File</span><span class="token punctuation">(</span>dexInternalStoragePath<span class="token punctuation">,</span>
+        targetFileName <span class="token operator">==</span> <span class="token keyword">null</span> <span class="token operator">?</span> pluginApk<span class="token punctuation">.</span><span class="token function">getName</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">:</span> targetFileName<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+info<span class="token punctuation">.</span><span class="token function">setFilePath</span><span class="token punctuation">(</span>privateFile<span class="token punctuation">.</span><span class="token function">getAbsolutePath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>pluginApk<span class="token punctuation">.</span><span class="token function">getAbsolutePath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>privateFile<span class="token punctuation">.</span><span class="token function">getAbsolutePath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token function">copyApkToPrivatePath</span><span class="token punctuation">(</span>pluginApk<span class="token punctuation">,</span> privateFile<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li><h3 id="解析插件manifest-xml中的信息"><a href="#解析插件manifest-xml中的信息" class="headerlink" title="解析插件manifest.xml中的信息"></a>解析插件manifest.xml中的信息</h3></li>
+</ul>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">String</span> dexPath <span class="token operator">=</span> privateFile<span class="token punctuation">.</span><span class="token function">getAbsolutePath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token class-name">PluginManifestUtil</span><span class="token punctuation">.</span><span class="token function">setManifestInfo</span><span class="token punctuation">(</span>context<span class="token punctuation">,</span> dexPath<span class="token punctuation">,</span> info<span class="token punctuation">)</span><span class="token punctuation">;</span> <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p> 处理过程比较复杂，之后再分析</p>
+<ul>
+<li><h3 id="生成自定义ClassLoader备用"><a href="#生成自定义ClassLoader备用" class="headerlink" title="生成自定义ClassLoader备用"></a>生成自定义ClassLoader备用</h3></li>
+</ul>
+<p><code>PluginClassLoader</code>继承自<code>DexClassLoader</code>，以<code>FramworkClassLoader</code>作为parent ClassLoader，把生成的<code>pluginClassLoader</code>保存在<code>pluginInfo</code>中</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">PluginClassLoader</span> loader <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PluginClassLoader</span><span class="token punctuation">(</span>dexPath<span class="token punctuation">,</span> dexOutputPath<span class="token punctuation">,</span> frameworkClassLoader<span class="token punctuation">,</span> info<span class="token punctuation">)</span><span class="token punctuation">;</span>
+info<span class="token punctuation">.</span><span class="token function">setClassLoader</span><span class="token punctuation">(</span>loader<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>自定义的<code>PluginClassLoader</code>会在之后的<code>FrameworkClassLoader</code> <code>loadClass</code>时用到。</p>
+<p><code>FrameworkClassLoader</code>的<code>loadClass</code>方法是Android PluginManager的核心方法，根据需要选择不同的classLoader来加载类文件。当需要加载插件中的类时，便委托给<code>PluginClassLoader</code>。</p>
+<p><code>PluginClassLoader</code>由于继承自<code>DexClassLoader</code> ，所以可以直接加载apk中的类文件，从而实现插件化的能力。</p>
+<ul>
+<li><h3 id="修改AssetManager加载资源的位置"><a href="#修改AssetManager加载资源的位置" class="headerlink" title="修改AssetManager加载资源的位置"></a>修改AssetManager加载资源的位置</h3></li>
+</ul>
+<p>现在已经能加载apk中的类文件了，但是还不能直接访问apk中的资源文件。</p>
+<p>平常通过<code>Context.getString()</code>、<code>Context.getDrawable()</code>访问res中的资源文件，其实是委托给<code>Resources</code>处理的，所以要使插件能正确读取资源文件，需要从<code>Resources</code>入手。</p>
+<p>继续分析<code>Resources</code>，发现<code>Resources.getString()</code>、<code>Resources.getDrawable()</code>等又是委托给<code>AssetManager</code>的<code>getResourceValue()</code>方法读取res下的资源。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+<span class="token keyword">public</span> <span class="token class-name">Drawable</span> <span class="token function">getDrawable</span><span class="token punctuation">(</span><span class="token keyword">int</span> id<span class="token punctuation">,</span> <span class="token annotation punctuation">@Nullable</span> <span class="token class-name">Theme</span> theme<span class="token punctuation">)</span> <span class="token keyword">throws</span> <span class="token class-name">NotFoundException</span> <span class="token punctuation">{</span>
+    <span class="token class-name">TypedValue</span> value<span class="token punctuation">;</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    
+    <span class="token comment">// 通过getValue从res中读取数据</span>
+    <span class="token function">getValue</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span> value<span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// 把typedValue中的数据转为Drawable</span>
+    <span class="token keyword">final</span> <span class="token class-name">Drawable</span> res <span class="token operator">=</span> <span class="token function">loadDrawable</span><span class="token punctuation">(</span>value<span class="token punctuation">,</span> id<span class="token punctuation">,</span> theme<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token keyword">return</span> res<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">getValue</span><span class="token punctuation">(</span><span class="token keyword">int</span> id<span class="token punctuation">,</span> <span class="token class-name">TypedValue</span> outValue<span class="token punctuation">,</span> <span class="token keyword">boolean</span> resolveRefs<span class="token punctuation">)</span>
+        <span class="token keyword">throws</span> <span class="token class-name">NotFoundException</span> <span class="token punctuation">{</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token comment">// 委托给assetManager读取资源，把资源元数据保存在typedValue中</span>
+    mAssets<span class="token punctuation">.</span><span class="token function">getResourceValue</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> outValue<span class="token punctuation">,</span> resolveRefs<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token punctuation">}</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>并且<code>Resources</code>对象是<code>ResourcesManager.getTopLevelResources()</code>通过<code>AssertManager</code>生成的。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">           
+   <span class="token keyword">public</span> <span class="token class-name">Resources</span> <span class="token function">getTopLevelResources</span><span class="token punctuation">(</span><span class="token class-name">String</span> resDir<span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> splitResDirs<span class="token punctuation">,</span>
+           <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> overlayDirs<span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">[</span><span class="token punctuation">]</span> libDirs<span class="token punctuation">,</span> <span class="token keyword">int</span> displayId<span class="token punctuation">,</span>
+           <span class="token class-name">Configuration</span> overrideConfiguration<span class="token punctuation">,</span> <span class="token class-name">CompatibilityInfo</span> compatInfo<span class="token punctuation">,</span> <span class="token class-name">IBinder</span> token<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+           <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+      <span class="token class-name">AssetManager</span> assets <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">AssetManager</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+       
+       <span class="token keyword">if</span> <span class="token punctuation">(</span>resDir <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+           <span class="token keyword">if</span> <span class="token punctuation">(</span>assets<span class="token punctuation">.</span><span class="token function">addAssetPath</span><span class="token punctuation">(</span>resDir<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+               <span class="token keyword">return</span> <span class="token keyword">null</span><span class="token punctuation">;</span>
+           <span class="token punctuation">}</span>
+       <span class="token punctuation">}</span>
+       
+       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+       r <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Resources</span><span class="token punctuation">(</span>assets<span class="token punctuation">,</span> dm<span class="token punctuation">,</span> config<span class="token punctuation">,</span> compatInfo<span class="token punctuation">,</span> token<span class="token punctuation">)</span><span class="token punctuation">;</span>
+       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+       
+       <span class="token keyword">return</span> r<span class="token punctuation">;</span>
+｝<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>所以看起来只要搞定了<code>AssetManager</code>，就能顺利使插件访问到正确的资源文件了。</p>
+<p>继续分析<code>AssetManager</code>，幸运的是<code>AssetManager</code>提供了一个<code>addAssetPath()</code>方法，可以直接读取zip文件中的资源。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">/**
+ * Add an additional set of assets to the asset manager.  This can be
+ * either a directory or ZIP file.  Not for use by applications.  Returns
+ * the cookie of the added asset, or 0 on failure.
+ * {@hide}
+ */</span>
+<span class="token keyword">public</span> <span class="token keyword">final</span> <span class="token keyword">int</span> <span class="token function">addAssetPath</span><span class="token punctuation">(</span><span class="token class-name">String</span> path<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">synchronized</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">int</span> res <span class="token operator">=</span> <span class="token function">addAssetPathNative</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">makeStringBlocks</span><span class="token punctuation">(</span>mStringBlocks<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> res<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+<p>所以我们把插件apk的路径添加到assetpath中，之后生成的代理activity就能访问到插件中的资源文件。</p>
+<p>我们需要生成一个<code>AssetManager</code>，并把插件apk的路径添加进<code>AssetManager</code>中。</p>
+<p><code>AssetManager</code>并不能直接new出来，<code>addAssetPath()</code>方法也不能直接方法，但是都可以同反射解决。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">try</span> <span class="token punctuation">{</span>
+    <span class="token class-name">AssetManager</span> am <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">AssetManager</span><span class="token punctuation">)</span> <span class="token class-name">AssetManager</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">.</span><span class="token function">newInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    am<span class="token punctuation">.</span><span class="token function">getClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getMethod</span><span class="token punctuation">(</span><span class="token string">"addAssetPath"</span><span class="token punctuation">,</span> <span class="token class-name">String</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span>
+            <span class="token punctuation">.</span><span class="token function">invoke</span><span class="token punctuation">(</span>am<span class="token punctuation">,</span> dexPath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    info<span class="token punctuation">.</span><span class="token function">setAssetManager</span><span class="token punctuation">(</span>am<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token class-name">Resources</span> ctxres <span class="token operator">=</span> context<span class="token punctuation">.</span><span class="token function">getResources</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token class-name">Resources</span> res <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Resources</span><span class="token punctuation">(</span>am<span class="token punctuation">,</span> ctxres<span class="token punctuation">.</span><span class="token function">getDisplayMetrics</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            ctxres<span class="token punctuation">.</span><span class="token function">getConfiguration</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    info<span class="token punctuation">.</span><span class="token function">setResources</span><span class="token punctuation">(</span>res<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Exception</span> e<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>这样便可以访问插件中的资源了。</p>
+<ul>
+<li><h3 id="初始化插件的application"><a href="#初始化插件的application" class="headerlink" title="初始化插件的application"></a>初始化插件的application</h3></li>
+</ul>
+<p>同样是通过反射，用之前通过</p>
+<pre class="line-numbers language-none"><code class="language-none">PluginManifestUtil.setManifestInfo(context, dexPath, info); <span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>方法获取保存在<code>PlugInfo</code>里的插件Application类名，实例化插件的application。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token class-name">ClassLoader</span> loader <span class="token operator">=</span> plugin<span class="token punctuation">.</span><span class="token function">getClassLoader</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">try</span> <span class="token punctuation">{</span>
+    <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">&gt;</span></span> applicationClass <span class="token operator">=</span> loader<span class="token punctuation">.</span><span class="token function">loadClass</span><span class="token punctuation">(</span>className<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token class-name">Application</span> application <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">Application</span><span class="token punctuation">)</span> applicationClass
+            <span class="token punctuation">.</span><span class="token function">newInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">setApplicationBase</span><span class="token punctuation">(</span>plugin<span class="token punctuation">,</span> application<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// invoke plugin application's onCreate()</span>
+    application<span class="token punctuation">.</span><span class="token function">onCreate</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Throwable</span> e<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token class-name">Log</span><span class="token punctuation">.</span><span class="token function">e</span><span class="token punctuation">(</span>tag<span class="token punctuation">,</span> <span class="token class-name">Log</span><span class="token punctuation">.</span><span class="token function">getStackTraceString</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>实例化插件的Application后，并不能直接使用， 此时的Application Context还是宿主（Host）的Context，直接<code>getResources()</code>，<code>getFilesDir()</code>等获取到的还是宿主的。</p>
+<p>需要用<code>PluginContextWrapper</code>替换掉插件Application中Context。</p>
+<pre class="line-numbers language-java" data-language="java"><code class="language-java">
+<span class="token class-name">PluginContextWrapper</span> ctxWrapper <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">PluginContextWrapper</span><span class="token punctuation">(</span>context<span class="token punctuation">,</span>
+         plugin<span class="token punctuation">)</span><span class="token punctuation">;</span>
+ plugin<span class="token punctuation">.</span>appWrapper <span class="token operator">=</span> ctxWrapper<span class="token punctuation">;</span>
+ <span class="token comment">// attach</span>
+ <span class="token class-name">Method</span> attachMethod <span class="token operator">=</span> <span class="token class-name">Application</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">.</span><span class="token function">getDeclaredMethod</span><span class="token punctuation">(</span>
+         <span class="token string">"attach"</span><span class="token punctuation">,</span> <span class="token class-name">Context</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ attachMethod<span class="token punctuation">.</span><span class="token function">setAccessible</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ attachMethod<span class="token punctuation">.</span><span class="token function">invoke</span><span class="token punctuation">(</span>application<span class="token punctuation">,</span> ctxWrapper<span class="token punctuation">)</span><span class="token punctuation">;</span>
+ <span class="token keyword">if</span> <span class="token punctuation">(</span>context <span class="token keyword">instanceof</span> <span class="token class-name">Application</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+     <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name"><span class="token namespace">android<span class="token punctuation">.</span>os<span class="token punctuation">.</span></span>Build</span><span class="token punctuation">.</span>VERSION<span class="token punctuation">.</span>SDK_INT <span class="token operator">&gt;=</span> <span class="token number">14</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+         <span class="token class-name">Application</span><span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">.</span><span class="token function">getMethod</span><span class="token punctuation">(</span><span class="token string">"registerComponentCallbacks"</span><span class="token punctuation">,</span>
+                 <span class="token class-name">Class</span><span class="token punctuation">.</span><span class="token function">forName</span><span class="token punctuation">(</span><span class="token string">"android.content.ComponentCallbacks"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                 <span class="token punctuation">.</span><span class="token function">invoke</span><span class="token punctuation">(</span>context<span class="token punctuation">,</span> application<span class="token punctuation">)</span><span class="token punctuation">;</span>
+     <span class="token punctuation">}</span>
+ <span class="token punctuation">}</span>
+ <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>ContextWrapper的原理和机制参考本文后的参考文章<a href="#%E5%8F%82%E8%80%83">[5]</a><a href="#%E5%8F%82%E8%80%83">[6]</a><a href="#%E5%8F%82%E8%80%83">[7]</a><a href="#%E5%8F%82%E8%80%83">[8]</a></p>
+<ul>
+<li><h3 id="加载目录下所有插件"><a href="#加载目录下所有插件" class="headerlink" title="加载目录下所有插件"></a>加载目录下所有插件</h3></li>
+</ul>
+<p>同加载单个插件的方法，只不过是遍历目录下的所有apk文件。</p>
+<h2 id="启动插件中的MainActivity"><a href="#启动插件中的MainActivity" class="headerlink" title="启动插件中的MainActivity"></a>启动插件中的MainActivity</h2><p><code>startMainActivity()</code>中的事情比较简单，根据插件id或插件包名在之前缓存的Map中查找<code>PlugInfo</code>，通过<code>framwworkClassLoader</code>的<code>newActivityClassName()</code>方法缓存要启动的插件id及Activity类名，供<code>framwworkClassLoader</code>在loadClass时使用。</p>
+<p>而<code>newActivityClassName()</code>方法本身只是返回一个名为<code>androidx.pluginmgr.PluginActivity</code>的代理Activity类名。</p>
+<p>至于具体如何通过<code>androidx.pluginmgr.PluginActivity</code>加载到真正插件中的Activity，则是在<code>PluginClassLoader</code>中的<code>loadActivityClass</code>方法实现的，后面再具体分析。</p>
+<h2 id="其他方法"><a href="#其他方法" class="headerlink" title="其他方法"></a>其他方法</h2><p>剩下一些删除插件、卸载插件的方法，以及一些方法的重载，就不赘述了。</p>
+<p>本文是在学习Android pluginManager之余将做一些笔记备忘，刚开始研究插件，对其中难免有理解不正确的地方，欢迎大家留言指正，共同学习。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a target="_blank" rel="noopener" href="http://www.trinea.cn/android/java-loader-common-class/">Java ClassLoader基础及加载不同依赖 Jar 中的公共类</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.trinea.cn/android/android-plugin/">Android 插件化 动态升级</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.csdn.net/singwhatiwanna/article/details/39937639">APK动态加载框架（DL）解析</a></li>
+<li><a target="_blank" rel="noopener" href="http://codekk.com/open-source-project-analysis/detail/Android/FFish/DynamicLoadApk%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90">DynamicLoadApk 源码解析</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.csdn.net/canghai1129/article/details/41577901">Android与设计模式——装饰者(Decorator)模式</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.csdn.net/z1074971432/article/details/12561369">深入理解 Context</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.csdn.net/qinjuning/article/details/7310620">Android中Context详解 —- 你所不知道的Context</a></li>
+<li><a target="_blank" rel="noopener" href="http://blogs.360.cn/blog/proxydelegate-application/">Android的Proxy/Delegate Application框架</a></li>
+</ol>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Caden</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="https://lwn.me/2015/08/08/android-pluginmanager-source-code-analysis-1/">https://lwn.me/2015/08/08/android-pluginmanager-source-code-analysis-1/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Caden</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/%E6%8F%92%E4%BB%B6/">
+                                    <span class="chip bg-color">插件</span>
+                                </a>
+                            
+                                <a href="/tags/%E5%8F%8D%E5%B0%84/">
+                                    <span class="chip bg-color">反射</span>
+                                </a>
+                            
+                                <a href="/tags/ClassLoader/">
+                                    <span class="chip bg-color">ClassLoader</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2015/08/10/android-pluginmanager-source-code-analysis-2/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/10.jpg" class="responsive-img" alt="Android PluginManager 源码解析2--FrameworkClassLoader">
+                        
+                        <span class="card-title">Android PluginManager 源码解析2--FrameworkClassLoader</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            学习Android PluginManager加载插件的机制，需要先了解系统是如何加载Activity的。
+Android 启动Activity的机制Android系统的Activity是通过 AndroidThread.performLa
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2015-08-10
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Android/" class="post-category">
+                                    Android
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/%E6%8F%92%E4%BB%B6/">
+                        <span class="chip bg-color">插件</span>
+                    </a>
+                    
+                    <a href="/tags/%E5%8F%8D%E5%B0%84/">
+                        <span class="chip bg-color">反射</span>
+                    </a>
+                    
+                    <a href="/tags/ClassLoader/">
+                        <span class="chip bg-color">ClassLoader</span>
+                    </a>
+                    
+                    <a href="/tags/DexClassLoader/">
+                        <span class="chip bg-color">DexClassLoader</span>
+                    </a>
+                    
+                    <a href="/tags/AndroidThread/">
+                        <span class="chip bg-color">AndroidThread</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2014/11/01/javascript-vo-closure-scopechain/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="图解javascript中的变量对象、闭包、作用域链机理">
+                        
+                        <span class="card-title">图解javascript中的变量对象、闭包、作用域链机理</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            什么是闭包javascript中的闭包是一个强大而灵活的武器，搞清闭包，作用域链的作用机理，能让我更好的将闭包运用在我们的项目中。
+mozilla开发者中心的定义：
+
+Closures are functions that refer to
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2014-11-02
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/JavaScript/" class="post-category">
+                                    JavaScript
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/vo/">
+                        <span class="chip bg-color">vo</span>
+                    </a>
+                    
+                    <a href="/tags/closure/">
+                        <span class="chip bg-color">closure</span>
+                    </a>
+                    
+                    <a href="/tags/scopechain/">
+                        <span class="chip bg-color">scopechain</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
+        
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
+    </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="/libs/aplayer/Meting.min.js"></script>
+
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2015-2022</span>
+            
+            <a href="/about" target="_blank">Caden</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+                &nbsp;<i class="fas fa-chart-area"></i>&nbsp;站点总字数:&nbsp;<span
+                        class="white-color">11.5k</span>
+            
+            
+            
+                
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/fatterx" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="https://twitter.com/lwn888" class="tooltipped" target="_blank" data-tooltip="关注我的Twitter: https://twitter.com/lwn888" data-position="top" data-delay="50">
+        <i class="fab fa-twitter"></i>
+    </a>
+
+
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+
+    <!-- 雪花特效 -->
+    
+
+    <!-- 鼠标星星特效 -->
+    
+
+     
+        <script src="https://ssl.captcha.qq.com/TCaptcha.js"></script>
+        <script src="/libs/others/TencentCaptcha.js"></script>
+        <button id="TencentCaptcha" data-appid="xxxxxxxxxx" data-cbfn="callback" type="button" hidden></button>
+    
+
+    <!-- Baidu Analytics -->
+
+<script>
+    var _hmt = _hmt || [];
+    (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?7ece1eb129aa341d775bbcfe725aab36";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
